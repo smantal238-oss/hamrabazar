@@ -139,7 +139,7 @@ export default function HomePage() {
                     category={listing.category}
                     city={listing.city}
                     imageUrl={listing.imageUrl || undefined}
-                    createdAt={listing.createdAt?.toISOString() || new Date().toISOString()}
+                    createdAt={typeof listing.createdAt === 'string' ? listing.createdAt : (listing.createdAt ? new Date(listing.createdAt).toISOString() : new Date().toISOString())}
                     onClick={() => navigate(`/listing/${listing.id}`)}
                   />
                 ))}

@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="fa" id="html-element">
+<head>
+  <meta charset="UTF-8">
+  <title>بازار افغانستان | خانه</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="بازار افغانستان">
+  <meta name="theme-color" content="#302b63">
+  <meta name="msapplication-TileColor" content="#0f0c29">
+
+  <!-- Description and Keywords -->
+  <meta name="description" content="بازار افغانستان - بزرگترین بازار آنلاین کشور برای خرید و فروش املاک، خودرو، الکترونیکی و سایر کالاها">
+  <meta name="keywords" content="بازار, افغانستان, آگهی, خرید, فروش, املاک, خودرو, الکترونیکی">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Tahoma', sans-serif;
+      direction: rtl;
+      color: #f0f0f0;
+      padding: 20px;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    }
+
+    body.ltr {
+      direction: ltr;
+    }
+
+    body.pashto {
+      font-family: 'Tahoma', 'Afghan Sans', sans-serif;
+    }
+
+    .section-box {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      padding: 20px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(8px);
+    }
+
+    .section-box h2 {
+      margin-top: 0;
+      color: #ffffff;
+      font-size: 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      padding-bottom: 10px;
+    }
+
+    .nav-bar {
+      display: flex;
+      gap: 25px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .nav-bar a {
+      text-decoration: none;
+      font-weight: bold;
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 8px;
+      background-color: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .nav-bar a:hover {
+      background-color: #ffffff;
+      color: #6a11cb;
+      border-color: #ffffff;
+    }
+
+    .circle-list {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding-top: 10px;
+    }
+
+    .circle-item {
+      min-width: 100px;
+      height: 100px;
+      background: radial-gradient(circle at top left, #ffffff, #e0e0e0);
+      border-radius: 50%;
+      box-shadow: 6px 6px 12px #d1d1d1, -6px -6px 12px #ffffff;
+      text-align: center;
+      padding-top: 20px;
+      font-size: 26px;
+      font-weight: bold;
+      color: #333;
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+
+    .circle-item:hover {
+      transform: scale(1.1);
+      background: linear-gradient(to bottom, #00c6ff, #007bff);
+      color: white;
+    }
+
+    .circle-item span {
+      display: block;
+      margin-top: 5px;
+      font-size: 18px;
+    }
+
+    .search-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .search-form input {
+      flex: 2;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ffffff;
+      border-radius: 8px;
+      background-color: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    .search-form input::placeholder {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .search-form select {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ffffff;
+      border-radius: 8px;
+      background-color: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    .search-form select option {
+      background-color: #2a2a2a;
+      color: #fff;
+    }
+
+    .search-form button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #ffffff;
+      color: #6a11cb;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-weight: bold;
+    }
+
+    .search-form button:hover {
+      background-color: #f0f0f0;
+    }
+
+    .top-tools {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      display: flex;
+      gap: 10px;
+      z-index: 999;
+    }
+
+    .top-tools button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 20px;
+      background-color: rgba(255,255,255,0.2);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .top-tools button:hover {
+      background-color: rgba(255,255,255,0.4);
+    }
+
+    body.dark-mode {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #3a3a3a 100%);
+    }
+
+    /* Results Grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .card:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    .card:active {
+      transform: translateY(0px);
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .card .title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+
+    .card .meta {
+      font-size: 14px;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .card .price {
+      font-size: 16px;
+      font-weight: bold;
+      color: #00ff88;
+      margin-bottom: 8px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      color: rgba(255,255,255,0.7);
+      font-size: 18px;
+    }
+
+    .recent-items-section {
+      margin-top: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .search-form {
+        flex-direction: column;
+      }
+
+      .search-form input, .search-form select {
+        flex: 1;
+        width: 100%;
+      }
+
+      .circle-item {
+        min-width: 90px;
+        height: 90px;
+        font-size: 22px;
+        padding-top: 15px;
+      }
+
+      .circle-item span {
+        font-size: 16px;
+        margin-top: 3px;
+      }
+
+      .top-tools {
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-tools">
+    <button onclick="location.href='index.html'">🏠 <span id="home-btn">خانه</span></button>
+    <button onclick="location.href='login.php'">🔐 <span id="login-btn">ورود / ثبت‌نام</span></button>
+    <select id="language-selector" onchange="setLanguage(this.value)">
+      <option value="fa">فارسی</option>
+      <option value="ps">پشتو</option>
+      <option value="en">English</option>
+    </select>
+    <button onclick="toggleTheme()">🌙 <span id="theme-btn">حالت</span></button>
+  </div>
+
+  <!-- جستجو -->
+  <div class="section-box">
+    <h2 id="search-title">جستجو در بازار</h2>
+    <form class="search-form" onsubmit="handleSearch(event)">
+      <input type="text" placeholder="چی می‌گردی؟" id="searchInput">
+      <select id="categorySelect">
+        <option value="">انتخاب دسته‌بندی</option>
+        <option value="vehicles">وسایط نقلیه</option>
+        <option value="realestate">املاک</option>
+        <option value="electronics">الکترونیکی</option>
+        <option value="jewelry">جواهرات</option>
+        <option value="mens-clothes">لباس مردانه</option>
+        <option value="womens-clothes">لباس زنانه</option>
+        <option value="kids-clothes">لباس اطفال</option>
+        <option value="books">آموزش</option>
+        <option value="kids">لوازم کودک</option>
+        <option value="home">لوازم خانگی</option>
+        <option value="jobs">استخدام</option>
+        <option value="services">خدمات</option>
+        <option value="games">سرگرمی</option>
+        <option value="sports">ورزشی</option>
+      </select>
+      <button type="submit">🔍 <span id="search-btn">جستجو</span></button>
+    </form>
+  </div>
+
+  <!-- دسته‌بندی‌ها -->
+  <div class="section-box">
+    <h2 id="categories-title">همه دسته‌بندی‌ها</h2>
+    <div class="circle-list">
+      <div class="circle-item" onclick="searchByCategory('vehicles')">🚗<span id="vehicles-cat">وسایط نقلیه</span></div>
+      <div class="circle-item" onclick="searchByCategory('realestate')">🏠<span id="realestate-cat">املاک</span></div>
+      <div class="circle-item" onclick="searchByCategory('electronics')">📱<span id="electronics-cat">الکترونیکی</span></div>
+      <div class="circle-item" onclick="searchByCategory('jewelry')">💎<span id="jewelry-cat">جواهرات</span></div>
+      <div class="circle-item" onclick="searchByCategory('mens-clothes')">👔<span id="mens-clothes-cat">لباس مردانه</span></div>
+      <div class="circle-item" onclick="searchByCategory('womens-clothes')">👗<span id="womens-clothes-cat">لباس زنانه</span></div>
+      <div class="circle-item" onclick="searchByCategory('kids-clothes')">👶<span id="kids-clothes-cat">لباس اطفال</span></div>
+      <div class="circle-item" onclick="searchByCategory('books')">📚<span id="books-cat">آموزش</span></div>
+      <div class="circle-item" onclick="searchByCategory('kids')">🧸<span id="kids-cat">لوازم کودک</span></div>
+      <div class="circle-item" onclick="searchByCategory('home')">🛋️<span id="home-cat">لوازم خانگی</span></div>
+      <div class="circle-item" onclick="searchByCategory('jobs')">💼<span id="jobs-cat">استخدام</span></div>
+      <div class="circle-item" onclick="searchByCategory('services')">🛠️<span id="services-cat">خدمات</span></div>
+      <div class="circle-item" onclick="searchByCategory('games')">🎮<span id="games-cat">سرگرمی</span></div>
+      <div class="circle-item" onclick="searchByCategory('sports')">⚽<span id="sports-cat">ورزشی</span></div>
+    </div>
+  </div>
+
+  <!-- شهرهای افغانستان -->
+  <div class="section-box">
+    <h2 id="cities-title">شهرهای افغانستان</h2>
+    <div class="circle-list">
+      <div class="circle-item" onclick="searchCity('kabul')">🏛️<span id="kabul-city">کابل</span></div>
+      <div class="circle-item" onclick="searchCity('herat')">🕌<span id="herat-city">هرات</span></div>
+      <div class="circle-item" onclick="searchCity('mazar')">🏺<span id="mazar-city">مزار شریف</span></div>
+      <div class="circle-item" onclick="searchCity('kandahar')">🏜️<span id="kandahar-city">قندهار</span></div>
+      <div class="circle-item" onclick="searchCity('jalalabad')">🏔️<span id="jalalabad-city">جلال‌آباد</span></div>
+      <div class="circle-item" onclick="searchCity('ghazni')">🏰<span id="ghazni-city">غزنی</span></div>
+      <div class="circle-item" onclick="searchCity('bamyan')">⛰️<span id="bamyan-city">بامیان</span></div>
+      <div class="circle-item" onclick="searchCity('farah')">🌾<span id="farah-city">فراه</span></div>
+      <div class="circle-item" onclick="searchCity('kunduz')">🌿<span id="kunduz-city">کندز</span></div>
+      <div class="circle-item" onclick="searchCity('badakhshan')">🏔️<span id="badakhshan-city">بدخشان</span></div>
+    </div>
+  </div>
+
+  <!-- آخرین آگهی‌های منتشر شده -->
+  <div class="section-box recent-items-section">
+    <h2 id="recent-title">آخرین آگهی‌های منتشر شده</h2>
+    <div id="loadingMessage" class="loading">در حال بارگذاری آگهی‌ها...</div>
+    <div id="resultsGrid" class="results-grid"></div>
+  </div>
+
+  <!-- درباره بازار -->
+  <div class="section-box">
+    <h2 id="about-title">خوش آمدید به بازار افغانستان</h2>
+    <p id="about-text" style="line-height: 1.8; font-size: 16px;">
+      بزرگترین بازار آنلاین افغانستان که در آن می‌توانید هر چیزی که نیاز دارید پیدا کنید. 
+      از املاک و وسایل نقلیه گرفته تا لوازم خانگی، الکترونیکی و فرصت‌های شغلی.
+    </p>
+    <p id="about-text2" style="line-height: 1.8; font-size: 16px;">
+      با استفاده از سیستم جستجوی پیشرفته و دسته‌بندی‌های کامل، به راحتی آنچه که می‌خواهید پیدا کنید.
+    </p>
+  </div>
+
+  <!-- فوتر ساده با لینک صفحات -->
+  <div style="text-align:center; margin-top:40px; padding:20px; border-top:1px solid rgba(255,255,255,0.3);">
+    <p style="margin:0;">
+      <a href="about.html" style="color:#fff; text-decoration:none; margin:0 10px;" id="footer-about">درباره ما</a> |
+      <a href="contact.html" style="color:#fff; text-decoration:none; margin:0 10px;" id="footer-contact">تماس با ما</a> |
+      <a href="privacy.html" style="color:#fff; text-decoration:none; margin:0 10px;" id="footer-privacy">قوانین و حریم خصوصی</a> |
+      <a href="feedback.html" style="color:#fff; text-decoration:none; margin:0 10px;" id="footer-feedback">ارسال نظرات</a> |
+      <a href="search.php" style="color:#fff; text-decoration:none; margin:0 10px;" id="footer-search">جستجو</a> |
+      <a href="add_item.php" style="color:#fff; text-decoration:none; margin:0 10px;" id="footer-add">ثبت آگهی</a>
+    </p>
+  </div>
+
+  <script>
+    let currentLang = 'fa';
+    const resultsGrid = document.getElementById('resultsGrid');
+    const loadingMessage = document.getElementById('loadingMessage');
+
+    const translations = {
+      fa: {
+        'home-btn': 'خانه',
+        'login-btn': 'ورود / ثبت‌نام',
+        'lang-btn': 'زبان',
+        'theme-btn': 'حالت',
+        'search-title': 'جستجو در بازار',
+        'search-btn': 'جستجو',
+        'categories-title': 'همه دسته‌بندی‌ها',
+        'cities-title': 'شهرهای افغانستان',
+        'recent-title': 'آخرین آگهی‌های منتشر شده',
+        'about-title': 'خوش آمدید به بازار افغانستان',
+        'vehicles-cat': 'وسایط نقلیه',
+        'realestate-cat': 'املاک',
+        'electronics-cat': 'الکترونیکی',
+        'jewelry-cat': 'جواهرات',
+        'mens-clothes-cat': 'لباس مردانه',
+        'womens-clothes-cat': 'لباس زنانه',
+        'kids-clothes-cat': 'لباس اطفال',
+        'books-cat': 'آموزش',
+        'kids-cat': 'لوازم کودک',
+        'home-cat': 'لوازم خانگی',
+        'jobs-cat': 'استخدام',
+        'services-cat': 'خدمات',
+        'games-cat': 'سرگرمی',
+        'sports-cat': 'ورزشی',
+        'kabul-city': 'کابل',
+        'herat-city': 'هرات',
+        'mazar-city': 'مزار شریف',
+        'kandahar-city': 'قندهار',
+        'jalalabad-city': 'جلال‌آباد',
+        'ghazni-city': 'غزنی',
+        'bamyan-city': 'بامیان',
+        'farah-city': 'فراه',
+        'kunduz-city': 'کندز',
+        'badakhshan-city': 'بدخشان',
+        'about-text': 'بزرگترین بازار آنلاین افغانستان که در آن می‌توانید هر چیزی که نیاز دارید پیدا کنید. از املاک و وسایل نقلیه گرفته تا لوازم خانگی، الکترونیکی و فرصت‌های شغلی.',
+        'about-text2': 'با استفاده از سیستم جستجوی پیشرفته و دسته‌بندی‌های کامل، به راحتی آنچه که می‌خواهید پیدا کنید.',
+        'footer-about': 'درباره ما',
+        'footer-contact': 'تماس با ما',
+        'footer-privacy': 'قوانین و حریم خصوصی',
+        'footer-feedback': 'ارسال نظرات',
+        'footer-search': 'جستجو',
+        'footer-add': 'ثبت آگهی'
+      },
+      ps: {
+        'home-btn': 'کور',
+        'login-btn': 'ننوتل / نوم‌لیکنه',
+        'lang-btn': 'ژبه',
+        'theme-btn': 'حالت',
+        'search-title': 'په بازار کې لټون',
+        'search-btn': 'لټون',
+        'categories-title': 'ټولې برخې',
+        'cities-title': 'د افغانستان ښارونه',
+        'recent-title': 'وروستي خپاره شوي اعلانونه',
+        'about-title': 'د افغانستان بازار ته ښه راغلاست',
+        'vehicles-cat': 'موټرونه',
+        'realestate-cat': 'املاک',
+        'electronics-cat': 'برقی توکي',
+        'jewelry-cat': 'ګاڼې',
+        'mens-clothes-cat': 'د نارینه کالي',
+        'womens-clothes-cat': 'د ښځینه کالي',
+        'kids-clothes-cat': 'د ماشومانو کالي',
+        'books-cat': 'زده‌کړه',
+        'kids-cat': 'د ماشومانو توکي',
+        'home-cat': 'د کورونو توکي',
+        'jobs-cat': 'دندې',
+        'services-cat': 'خدمات',
+        'games-cat': 'لوبې',
+        'sports-cat': 'سپورت',
+        'kabul-city': 'کابل',
+        'herat-city': 'هرات',
+        'mazar-city': 'مزار شریف',
+        'kandahar-city': 'کندهار',
+        'jalalabad-city': 'جلال‌آباد',
+        'ghazni-city': 'غزني',
+        'bamyan-city': 'باميان',
+        'farah-city': 'فراه',
+        'kunduz-city': 'کندز',
+        'badakhshan-city': 'بدخشان',
+        'about-text': 'د افغانستان ترټولو لوی آنلاین بازار چې تاسو کولی شئ هرڅه ومومئ چې ورته اړتیا لرئ. د املاکو او موټرونو څخه نیولې تر د کورونو توکو، برقی توکو او د کار فرصتونو پورې.',
+        'about-text2': 'د پرمختللي لټون سیسټم او بشپړو برخو په کارولو سره، په اسانۍ سره هغه څه ومومئ چې غواړئ.',
+        'footer-about': 'زموږ په اړه',
+        'footer-contact': 'موږ سره اړیکه',
+        'footer-privacy': 'قوانین او محرمیت',
+        'footer-feedback': 'نظریات ولیږئ',
+        'footer-search': 'لټون',
+        'footer-add': 'اعلان ثبت کړئ'
+      },
+      en: {
+        'home-btn': 'Home',
+        'login-btn': 'Login / Register',
+        'lang-btn': 'Language',
+        'theme-btn': 'Theme',
+        'search-title': 'Search in Market',
+        'search-btn': 'Search',
+        'categories-title': 'All Categories',
+        'cities-title': 'Afghan Cities',
+        'recent-title': 'Recently Posted Items',
+        'about-title': 'Welcome to Afghanistan Market',
+        'vehicles-cat': 'Vehicles',
+        'realestate-cat': 'Real Estate',
+        'electronics-cat': 'Electronics',
+        'jewelry-cat': 'Jewelry',
+        'mens-clothes-cat': 'Men\'s Clothing',
+        'womens-clothes-cat': 'Women\'s Clothing',
+        'kids-clothes-cat': 'Kids Clothing',
+        'books-cat': 'Education',
+        'kids-cat': 'Kids Items',
+        'home-cat': 'Home Items',
+        'jobs-cat': 'Jobs',
+        'services-cat': 'Services',
+        'games-cat': 'Games',
+        'sports-cat': 'Sports',
+        'kabul-city': 'Kabul',
+        'herat-city': 'Herat',
+        'mazar-city': 'Mazar Sharif',
+        'kandahar-city': 'Kandahar',
+        'jalalabad-city': 'Jalalabad',
+        'ghazni-city': 'Ghazni',
+        'bamyan-city': 'Bamyan',
+        'farah-city': 'Farah',
+        'kunduz-city': 'Kunduz',
+        'badakhshan-city': 'Badakhshan',
+        'about-text': 'The largest online market in Afghanistan where you can find anything you need. From real estate and vehicles to home appliances, electronics and job opportunities.',
+        'about-text2': 'Using an advanced search system and comprehensive categories, easily find what you want.',
+        'footer-about': 'About Us',
+        'footer-contact': 'Contact Us',
+        'footer-privacy': 'Privacy Policy',
+        'footer-feedback': 'Send Feedback',
+        'footer-search': 'Search',
+        'footer-add': 'Post Ad'
+      }
+    };
+
+    // Fetch and display recent items on page load
+    async function fetchItems(filters = {}, limit = 8) {
+      try {
+        showLoading(true);
+        const queryString = new URLSearchParams({...filters, limit}).toString();
+        const response = await fetch(`get_items.php?${queryString}`);
+        const data = await response.json();
+
+        if (data.success) {
+          renderItemsList(data.items);
+        } else {
+          showError('خطا در بارگذاری آگهی‌ها');
+        }
+      } catch (error) {
+        console.error('Error fetching items:', error);
+        showError('خطا در اتصال به سرور');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function renderItemsList(items) {
+      resultsGrid.innerHTML = '';
+
+      if (items.length === 0) {
+        resultsGrid.innerHTML = '<div class="no-results">هیچ آگهی یافت نشد</div>';
+        return;
+      }
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.cursor = 'pointer';
+        card.innerHTML = `
+          <div class="title">${escapeHtml(item.title)}</div>
+          <div class="meta">${escapeHtml(item.description || '')}</div>
+          <div class="price">${formatPrice(item.price)} افغانی</div>
+          <div style="margin-top: 10px; text-align: ${document.body.style.direction === 'ltr' ? 'left' : 'right'};">
+            <button class="detail-btn" style="padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer; background: #ffffff; color: #6a11cb; font-weight: bold;">مشاهده جزئیات</button>
+          </div>
+        `;
+        
+        // Add click event listener for the entire card
+        card.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = `item_detail.php?id=${item.id}`;
+        });
+        
+        card.dataset.item = JSON.stringify(item);
+        resultsGrid.appendChild(card);
+      });
+    }
+
+    function showLoading(show) {
+      loadingMessage.style.display = show ? 'block' : 'none';
+    }
+
+    function showError(message) {
+      resultsGrid.innerHTML = `<div class="no-results">${message}</div>`;
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return (text || '').replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    function formatPrice(price) {
+      return parseFloat(price).toLocaleString('fa-IR');
+    }
+
+    function openDetail(itemId) {
+      window.location.href = `item_detail.php?id=${itemId}`;
+    }
+
+    function getQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        category: params.get('category'),
+        city: params.get('city'),
+        q: params.get('q')
+      };
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+
+      const html = document.getElementById('html-element');
+      const body = document.body;
+      const selector = document.getElementById('language-selector');
+
+      // Update language attribute
+      html.lang = currentLang;
+      selector.value = currentLang;
+
+      // Update direction and font
+      if (currentLang === 'en') {
+        body.classList.add('ltr');
+        body.classList.remove('pashto');
+        body.style.direction = 'ltr';
+      } else {
+        body.classList.remove('ltr');
+        body.style.direction = 'rtl';
+
+        if (currentLang === 'ps') {
+          body.classList.add('pashto');
+        } else {
+          body.classList.remove('pashto');
+        }
+      }
+
+      // Update all text elements
+      const translation = translations[currentLang];
+      for (const [key, value] of Object.entries(translation)) {
+        const element = document.getElementById(key);
+        if (element) {
+          element.textContent = value;
+        }
+      }
+
+      // Update placeholder
+      const searchInput = document.getElementById('searchInput');
+      if (currentLang === 'fa') {
+        searchInput.placeholder = 'چی می‌گردی؟';
+      } else if (currentLang === 'ps') {
+        searchInput.placeholder = 'څه غواړې؟';
+      } else {
+        searchInput.placeholder = 'What are you looking for?';
+      }
+
+      // Save preference
+      localStorage.setItem('afghanMarketLang', currentLang);
+    }
+
+    // Load saved language preference
+    function loadLanguagePreference() {
+      const savedLang = localStorage.getItem('afghanMarketLang') || 'fa';
+      setLanguage(savedLang);
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    function handleSearch(event) {
+      event.preventDefault();
+      const query = document.getElementById('searchInput').value;
+      const category = document.getElementById('categorySelect').value;
+
+      let searchUrl = 'search.php?';
+      if (query) searchUrl += 'q=' + encodeURIComponent(query) + '&';
+      if (category) searchUrl += 'category=' + category + '&';
+
+      window.location.href = searchUrl;
+    }
+
+    function searchByCategory(category) {
+      window.location.href = 'search.php?category=' + category;
+    }
+
+    function searchCity(city) {
+      window.location.href = 'search.php?city=' + city;
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load saved language preference
+      loadLanguagePreference();
+
+      // Load recent items on page load
+      fetchItems({}, 8);
+
+      // Check if there are URL parameters for initial search
+      const params = getQueryParams();
+      if (params.category || params.city || params.q) {
+        fetchItems({
+          category: params.category || null,
+          city: params.city || null,
+          search: params.q || null
+        });
+      }
+    });
+  </script>
+</body>
+</html>

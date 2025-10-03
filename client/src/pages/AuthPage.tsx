@@ -33,21 +33,40 @@ export default function AuthPage() {
     e.preventDefault();
     setIsLoading(true);
     
-    //todo: remove mock functionality - implement real authentication
-    setTimeout(() => {
-      console.log('Login:', loginData);
-      login({
-        id: 'mock-user-' + Date.now(),
-        name: loginData.phone,
-        phone: loginData.phone,
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginData),
       });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        toast({
+          title: 'خطا',
+          description: data.message || 'ورود ناموفق بود',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      login(data.user);
       toast({
         title: t('login'),
         description: 'ورود موفقیت‌آمیز بود',
       });
-      setIsLoading(false);
       navigate('/');
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: 'خطا',
+        description: 'خطا در برقراری ارتباط',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -64,21 +83,44 @@ export default function AuthPage() {
 
     setIsLoading(true);
     
-    //todo: remove mock functionality - implement real registration
-    setTimeout(() => {
-      console.log('Register:', registerData);
-      login({
-        id: 'mock-user-' + Date.now(),
-        name: registerData.name,
-        phone: registerData.phone,
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: registerData.name,
+          phone: registerData.phone,
+          password: registerData.password,
+        }),
       });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        toast({
+          title: 'خطا',
+          description: data.message || 'ثبت‌نام ناموفق بود',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      login(data.user);
       toast({
         title: t('register'),
         description: 'ثبت‌نام موفقیت‌آمیز بود',
       });
-      setIsLoading(false);
       navigate('/');
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: 'خطا',
+        description: 'خطا در برقراری ارتباط',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

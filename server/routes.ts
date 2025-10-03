@@ -1,9 +1,97 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertListingSchema } from "@shared/schema";
+import { insertListingSchema, insertUserSchema } from "@shared/schema";
+import bcrypt from "bcryptjs";
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: path.join(__dirname, '../public/uploads'),
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+  }),
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('Only image files are allowed!'));
+  },
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      
+      const existingUser = await storage.getUserByPhone(validatedData.phone);
+      if (existingUser) {
+        return res.status(400).json({ message: "Phone number already registered" });
+      }
+      
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+      
+      const user = await storage.createUser({
+        ...validatedData,
+        password: hashedPassword,
+      });
+      
+      const { password: _, ...userWithoutPassword } = user;
+      res.status(201).json({ user: userWithoutPassword });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { phone, password } = req.body;
+      
+      const user = await storage.getUserByPhone(phone);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid phone or password" });
+      }
+      
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid phone or password" });
+      }
+      
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/upload", upload.single('image'), async (req, res) => {
+    try {
+      const userId = req.body.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized - please login first" });
+      }
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+      const imageUrl = `/uploads/${req.file.filename}`;
+      res.json({ imageUrl });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.get("/api/listings", async (req, res) => {
     try {
       const { category, city, query } = req.query;

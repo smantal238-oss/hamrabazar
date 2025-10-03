@@ -25,6 +25,15 @@ export const listings = pgTable("listings", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const messages = pgTable("messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  listingId: varchar("listing_id").notNull().references(() => listings.id),
+  senderId: varchar("sender_id").notNull().references(() => users.id),
+  receiverId: varchar("receiver_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -38,10 +47,17 @@ export const insertListingSchema = createInsertSchema(listings).omit({
   userId: true,
 });
 
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertListing = z.infer<typeof insertListingSchema>;
 export type Listing = typeof listings.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;
 
 export const categories = [
   { id: "vehicles", nameFA: "وسایط نقلیه", namePS: "موټرونه", nameEN: "Vehicles", icon: "🚗" },

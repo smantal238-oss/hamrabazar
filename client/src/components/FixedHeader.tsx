@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { ArrowRight, Home, LogIn, Moon, Sun, Globe } from 'lucide-react';
+import { ArrowRight, Home, LogIn, LogOut, Moon, Sun, Globe, LayoutDashboard, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -8,8 +8,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface FixedHeaderProps {
   showBackButton?: boolean;
@@ -19,6 +28,7 @@ export default function FixedHeader({ showBackButton = false }: FixedHeaderProps
   const [location, navigate] = useLocation();
   const { language, setLanguage, t, dir } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border shadow-sm">
@@ -76,17 +86,57 @@ export default function FixedHeader({ showBackButton = false }: FixedHeaderProps
             {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
 
-          <Link href="/auth">
-            <Button variant="default" size="sm" data-testid="button-login" className="hidden md:flex">
-              <LogIn className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-              {t('login')}
-            </Button>
-          </Link>
-          <Link href="/auth">
-            <Button variant="default" size="icon" data-testid="button-login-mobile" className="md:hidden">
-              <LogIn className="w-5 h-5" />
-            </Button>
-          </Link>
+          {user ? (
+            <>
+              <Link href="/create-listing">
+                <Button variant="default" size="sm" data-testid="button-create-listing" className="hidden md:flex">
+                  <Plus className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                  {language === 'fa' ? 'ثبت آگهی' : language === 'ps' ? 'اعلان ثبت' : 'Post Ad'}
+                </Button>
+              </Link>
+              <Link href="/create-listing">
+                <Button variant="default" size="icon" data-testid="button-create-listing-mobile" className="md:hidden">
+                  <Plus className="w-5 h-5" />
+                </Button>
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full" data-testid="button-user-menu">
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {user.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align={dir === 'rtl' ? 'start' : 'end'} className="w-48">
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')} data-testid="menu-item-dashboard">
+                    <LayoutDashboard className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                    {language === 'fa' ? 'آگهی‌های من' : language === 'ps' ? 'زما اعلانونه' : 'My Listings'}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} data-testid="menu-item-logout">
+                    <LogOut className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                    {language === 'fa' ? 'خروج' : language === 'ps' ? 'وتل' : 'Logout'}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <>
+              <Link href="/auth">
+                <Button variant="default" size="sm" data-testid="button-login" className="hidden md:flex">
+                  <LogIn className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                  {t('login')}
+                </Button>
+              </Link>
+              <Link href="/auth">
+                <Button variant="default" size="icon" data-testid="button-login-mobile" className="md:hidden">
+                  <LogIn className="w-5 h-5" />
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

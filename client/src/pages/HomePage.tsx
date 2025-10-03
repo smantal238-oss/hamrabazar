@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import FixedHeader from '@/components/FixedHeader';
 import Footer from '@/components/Footer';
 import SearchBar from '@/components/SearchBar';
@@ -7,74 +8,41 @@ import CategoryCircle from '@/components/CategoryCircle';
 import CityCircle from '@/components/CityCircle';
 import ListingCard from '@/components/ListingCard';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { categories, cities } from '@shared/schema';
+import { categories, cities, type Listing } from '@shared/schema';
 import { Plus } from 'lucide-react';
-
-//todo: remove mock functionality - this is mock data for design prototype
-const generateMockListings = () => {
-  const listings: Array<{
-    id: string;
-    title: string;
-    price: number;
-    category: string;
-    city: string;
-    createdAt: string;
-  }> = [];
-  const sampleTitles = {
-    vehicles: ['تویوتا کرولا ۲۰۲۰', 'هوندا سیویک ۲۰۱۹', 'نیسان التیما ۲۰۲۱', 'بی ام و ۳۲۰i', 'مرسدس بنز C200'],
-    realestate: ['آپارتمان ۳ خوابه', 'خانه ویلایی', 'زمین مسکونی', 'دفتر تجاری', 'مغازه کلان'],
-    electronics: ['آیفون ۱۴ پرو', 'سامسونگ S23', 'لپ‌تاپ دل', 'تلویزیون ال جی', 'ایرپاد پرو'],
-    jewelry: ['انگشتر طلا', 'گردنبند یاقوت', 'ساعت رولکس', 'النگو نقره', 'گوشواره الماس'],
-    'mens-clothes': ['کت و شلوار', 'پیراهن رسمی', 'جین', 'کفش چرمی', 'ساعت مچی'],
-    'womens-clothes': ['لباس مجلسی', 'مانتو', 'شلوار جین', 'کفش پاشنه', 'کیف دستی'],
-    'kids-clothes': ['لباس نوزاد', 'کفش بچگانه', 'کلاه', 'کت بچگانه', 'شلوار ورزشی'],
-    books: ['کتاب انگلیسی', 'دیکشنری', 'کتاب درسی', 'رمان', 'کتاب تاریخ'],
-    kids: ['اسباب بازی', 'کالسکه', 'تخت کودک', 'پوشک', 'شیشه شیر'],
-    home: ['مبل راحتی', 'یخچال', 'ماشین لباسشویی', 'فرش', 'میز ناهارخوری'],
-    jobs: ['مهندس نرم‌افزار', 'حسابدار', 'راننده', 'فروشنده', 'معلم'],
-    services: ['تعمیرات موبایل', 'نقاشی ساختمان', 'تدریس خصوصی', 'باربری', 'برقکاری'],
-    games: ['پلی استیشن ۵', 'ایکس باکس', 'بازی فیفا', 'دسته بازی', 'هدست گیمینگ'],
-    sports: ['دوچرخه', 'توپ فوتبال', 'کفش ورزشی', 'تردمیل', 'دمبل'],
-  };
-
-  const prices = [5000, 12000, 25000, 45000, 8000, 15000, 30000, 60000, 100000, 3000];
-
-  categories.forEach((cat) => {
-    cities.forEach((city) => {
-      for (let i = 0; i < 4; i++) {
-        const titles = sampleTitles[cat.id as keyof typeof sampleTitles] || ['محصول نمونه'];
-        listings.push({
-          id: `${cat.id}-${city.id}-${i}`,
-          title: titles[i % titles.length],
-          price: prices[Math.floor(Math.random() * prices.length)],
-          category: cat.id,
-          city: city.id,
-          createdAt: new Date(Date.now() - Math.random() * 7 * 24 * 3600 * 1000).toISOString(),
-        });
-      }
-    });
-  });
-
-  return listings.sort(() => Math.random() - 0.5);
-};
 
 export default function HomePage() {
   const [, navigate] = useLocation();
   const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const queryParams = new URLSearchParams();
+  if (searchQuery) queryParams.append('query', searchQuery);
+  if (selectedCategory) queryParams.append('category', selectedCategory);
+  if (selectedCity) queryParams.append('city', selectedCity);
   
-  //todo: remove mock functionality
-  const allListings = generateMockListings();
-  
-  const filteredListings = allListings.filter(listing => {
-    if (selectedCategory && listing.category !== selectedCategory) return false;
-    if (selectedCity && listing.city !== selectedCity) return false;
-    return true;
+  const queryString = queryParams.toString();
+  const queryKey = queryString ? `/api/listings?${queryString}` : '/api/listings';
+
+  const { data: listings, isLoading } = useQuery<Listing[]>({
+    queryKey: [queryKey],
   });
 
-  const recentListings = filteredListings.slice(0, 24);
+  const handleSearch = (query: string, category: string, city: string) => {
+    setSearchQuery(query);
+    setSelectedCategory(category === 'all' ? '' : category);
+    setSelectedCity(city);
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('');
+    setSelectedCity('');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,11 +52,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="bg-card rounded-lg border border-border shadow-sm p-6 mb-8">
             <h2 className="text-xl md:text-2xl font-bold mb-4 text-foreground">{t('search')}</h2>
-            <SearchBar onSearch={(q, cat, city) => {
-              setSelectedCategory(cat);
-              setSelectedCity(city);
-              console.log('Search:', { q, cat, city });
-            }} />
+            <SearchBar onSearch={handleSearch} />
           </div>
 
           <div className="mb-8">
@@ -104,6 +68,7 @@ export default function HomePage() {
                     onClick={() => {
                       setSelectedCategory(cat.id);
                       setSelectedCity('');
+                      setSearchQuery('');
                     }}
                   />
                 ))}
@@ -124,6 +89,7 @@ export default function HomePage() {
                     onClick={() => {
                       setSelectedCity(city.id);
                       setSelectedCategory('');
+                      setSearchQuery('');
                     }}
                   />
                 ))}
@@ -131,15 +97,12 @@ export default function HomePage() {
             </div>
           </div>
 
-          {(selectedCategory || selectedCity) && (
+          {(selectedCategory || selectedCity || searchQuery) && (
             <div className="mb-4">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setSelectedCategory('');
-                  setSelectedCity('');
-                }}
+                onClick={clearFilters}
                 data-testid="button-clear-filters"
               >
                 {t('cancel')}
@@ -150,30 +113,43 @@ export default function HomePage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('recentListings')}</h2>
-              <Button
-                variant="default"
-                onClick={() => navigate('/post-ad')}
-                data-testid="button-post-ad"
-              >
-                <Plus className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                {t('postAd')}
-              </Button>
             </div>
             
-            {recentListings.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                {t('noResults')}
-              </div>
-            ) : (
+            {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {recentListings.map(listing => (
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                  <Card key={i} className="overflow-hidden animate-pulse">
+                    <div className="aspect-[4/3] bg-muted" />
+                    <div className="p-4 space-y-2">
+                      <div className="h-4 bg-muted rounded w-3/4" />
+                      <div className="h-4 bg-muted rounded w-1/2" />
+                      <div className="h-6 bg-muted rounded w-1/3 mt-2" />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : listings && listings.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {listings.map(listing => (
                   <ListingCard
                     key={listing.id}
-                    {...listing}
+                    id={listing.id}
+                    title={listing.title}
+                    price={listing.price}
+                    category={listing.category}
+                    city={listing.city}
+                    imageUrl={listing.imageUrl || undefined}
+                    createdAt={listing.createdAt?.toISOString() || new Date().toISOString()}
                     onClick={() => navigate(`/listing/${listing.id}`)}
                   />
                 ))}
               </div>
+            ) : (
+              <Card className="p-12 text-center">
+                <p className="text-xl text-muted-foreground">
+                  {t('noResults')}
+                </p>
+              </Card>
             )}
           </div>
         </div>

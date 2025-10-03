@@ -9,6 +9,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import HomePage from "@/pages/HomePage";
 import ListingDetailPage from "@/pages/ListingDetailPage";
 import AuthPage from "@/pages/AuthPage";
+import CreateListingPage from "@/pages/CreateListingPage";
+import DashboardPage from "@/pages/DashboardPage";
+import EditListingPage from "@/pages/EditListingPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -17,6 +20,9 @@ function Router() {
       <Route path="/" component={HomePage} />
       <Route path="/listing/:id" component={ListingDetailPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/create-listing" component={CreateListingPage} />
+      <Route path="/dashboard" component={DashboardPage} />
+      <Route path="/edit-listing/:id" component={EditListingPage} />
       <Route component={NotFound} />
     </Switch>
   );

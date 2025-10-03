@@ -1,4 +1,4 @@
-# Design Guidelines: بازار افغانستان (Afghan Marketplace)
+# Design Guidelines: همراه بازار (Hamrah Bazar)
 
 ## Design Approach
 

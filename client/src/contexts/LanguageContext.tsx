@@ -11,7 +11,7 @@ interface LanguageContextType {
 
 const translations = {
   fa: {
-    appName: 'بازار افغانستان',
+    appName: 'همراه بازار',
     home: 'خانه',
     login: 'ورود',
     register: 'ثبت‌نام',
@@ -41,9 +41,14 @@ const translations = {
     loading: 'در حال بارگذاری...',
     noResults: 'نتیجه‌ای یافت نشد',
     afghani: 'افغانی',
+    aboutUs: 'درباره ما',
+    contactUs: 'تماس با ما',
+    termsOfService: 'شرایط استفاده',
+    privacyPolicy: 'حریم خصوصی',
+    allRightsReserved: 'کلیه حقوق محفوظ است',
   },
   ps: {
-    appName: 'د افغانستان بازار',
+    appName: 'همراه بازار',
     home: 'کور',
     login: 'ننوتل',
     register: 'نوم لیکنه',
@@ -73,9 +78,14 @@ const translations = {
     loading: 'بارېدل...',
     noResults: 'پایله ونه موندل شوه',
     afghani: 'افغانۍ',
+    aboutUs: 'زموږ په اړه',
+    contactUs: 'موږ سره اړیکه',
+    termsOfService: 'د استعمال شرطونه',
+    privacyPolicy: 'د محرمیت پالیسي',
+    allRightsReserved: 'ټول حقونه خوندي دي',
   },
   en: {
-    appName: 'Afghan Bazaar',
+    appName: 'Hamrah Bazar',
     home: 'Home',
     login: 'Login',
     register: 'Register',
@@ -105,6 +115,11 @@ const translations = {
     loading: 'Loading...',
     noResults: 'No results found',
     afghani: 'AFN',
+    aboutUs: 'About Us',
+    contactUs: 'Contact Us',
+    termsOfService: 'Terms of Service',
+    privacyPolicy: 'Privacy Policy',
+    allRightsReserved: 'All rights reserved',
   },
 };
 

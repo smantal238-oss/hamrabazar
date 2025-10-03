@@ -1,15 +1,19 @@
-import { useRoute } from 'wouter';
+import { useRoute, useLocation } from 'wouter';
 import FixedHeader from '@/components/FixedHeader';
+import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { categories, cities } from '@shared/schema';
-import { Phone, MapPin, Clock, User } from 'lucide-react';
+import { Phone, MapPin, Clock, User, LogIn } from 'lucide-react';
 
 export default function ListingDetailPage() {
   const [, params] = useRoute('/listing/:id');
+  const [, navigate] = useLocation();
   const { t, language } = useLanguage();
+  const { isAuthenticated } = useAuth();
 
   //todo: remove mock functionality
   const mockListing = {
@@ -126,18 +130,30 @@ export default function ListingDetailPage() {
                       </p>
                     </div>
                   </div>
-                  <Button
-                    className="w-full"
-                    size="lg"
-                    onClick={() => {
-                      console.log('Call seller:', mockListing.phone);
-                      window.location.href = `tel:${mockListing.phone}`;
-                    }}
-                    data-testid="button-call-seller"
-                  >
-                    <Phone className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-                    {mockListing.phone}
-                  </Button>
+                  {isAuthenticated ? (
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      onClick={() => {
+                        console.log('Call seller:', mockListing.phone);
+                        window.location.href = `tel:${mockListing.phone}`;
+                      }}
+                      data-testid="button-call-seller"
+                    >
+                      <Phone className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+                      {mockListing.phone}
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      onClick={() => navigate('/auth')}
+                      data-testid="button-login-required"
+                    >
+                      <LogIn className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+                      {t('login')}
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
 
@@ -166,6 +182,8 @@ export default function ListingDetailPage() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

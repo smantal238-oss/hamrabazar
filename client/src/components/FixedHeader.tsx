@@ -17,13 +17,13 @@ interface FixedHeaderProps {
 
 export default function FixedHeader({ showBackButton = false }: FixedHeaderProps) {
   const [location, navigate] = useLocation();
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage, t, dir } = useLanguage();
   const { theme, toggleTheme } = useTheme();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border shadow-sm">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4" style={{ direction: dir }}>
+        <div className="flex items-center gap-3 order-1">
           {showBackButton && location !== '/' ? (
             <Button
               size="icon"
@@ -32,7 +32,7 @@ export default function FixedHeader({ showBackButton = false }: FixedHeaderProps
               data-testid="button-back"
               className="hover-elevate active-elevate-2"
             >
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className={`w-5 h-5 ${dir === 'ltr' ? 'rotate-180' : ''}`} />
             </Button>
           ) : (
             <Link href="/">
@@ -53,7 +53,7 @@ export default function FixedHeader({ showBackButton = false }: FixedHeaderProps
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 order-2">
           <Select value={language} onValueChange={(value) => setLanguage(value as any)}>
             <SelectTrigger className="w-[100px] md:w-[120px]" data-testid="select-language">
               <Globe className="w-4 h-4 ltr:mr-2 rtl:ml-2" />

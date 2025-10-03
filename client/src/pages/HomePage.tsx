@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import FixedHeader from '@/components/FixedHeader';
+import Footer from '@/components/Footer';
 import SearchBar from '@/components/SearchBar';
 import CategoryCircle from '@/components/CategoryCircle';
 import CityCircle from '@/components/CityCircle';
@@ -178,16 +179,7 @@ export default function HomePage() {
         </div>
       </main>
 
-      <footer className="bg-card border-t border-border py-8">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p className="text-lg font-semibold mb-2">{t('appName')}</p>
-          <p className="text-sm">
-            {t('language') === 'fa' && 'بزرگترین بازار آنلاین افغانستان'}
-            {t('language') === 'ps' && 'د افغانستان ترټولو لوی آنلاین بازار'}
-            {t('language') === 'en' && "Afghanistan's Largest Online Marketplace"}
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

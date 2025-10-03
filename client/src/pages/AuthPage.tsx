@@ -7,11 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AuthPage() {
   const [, navigate] = useLocation();
   const { t } = useLanguage();
+  const { login } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -34,6 +36,11 @@ export default function AuthPage() {
     //todo: remove mock functionality - implement real authentication
     setTimeout(() => {
       console.log('Login:', loginData);
+      login({
+        id: 'mock-user-' + Date.now(),
+        name: loginData.phone,
+        phone: loginData.phone,
+      });
       toast({
         title: t('login'),
         description: 'ورود موفقیت‌آمیز بود',
@@ -60,6 +67,11 @@ export default function AuthPage() {
     //todo: remove mock functionality - implement real registration
     setTimeout(() => {
       console.log('Register:', registerData);
+      login({
+        id: 'mock-user-' + Date.now(),
+        name: registerData.name,
+        phone: registerData.phone,
+      });
       toast({
         title: t('register'),
         description: 'ثبت‌نام موفقیت‌آمیز بود',
@@ -79,9 +91,9 @@ export default function AuthPage() {
             <CardHeader>
               <CardTitle className="text-2xl text-center">{t('appName')}</CardTitle>
               <CardDescription className="text-center">
-                {t('language') === 'fa' && 'به بازار افغانستان خوش آمدید'}
-                {t('language') === 'ps' && 'د افغانستان بازار ته ښه راغلاست'}
-                {t('language') === 'en' && 'Welcome to Afghan Bazaar'}
+                {t('language') === 'fa' && 'به همراه بازار خوش آمدید'}
+                {t('language') === 'ps' && 'د همراه بازار ته ښه راغلاست'}
+                {t('language') === 'en' && 'Welcome to Hamrah Bazar'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -191,9 +203,9 @@ export default function AuthPage() {
           </Card>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            {t('language') === 'fa' && 'با ثبت‌نام، شما قوانین و مقررات بازار افغانستان را می‌پذیرید'}
-            {t('language') === 'ps' && 'د نوم لیکنې سره، تاسو د افغانستان بازار قوانین منئ'}
-            {t('language') === 'en' && 'By registering, you agree to Afghan Bazaar terms'}
+            {t('language') === 'fa' && 'با ثبت‌نام، شما قوانین و مقررات همراه بازار را می‌پذیرید'}
+            {t('language') === 'ps' && 'د نوم لیکنې سره، تاسو د همراه بازار قوانین منئ'}
+            {t('language') === 'en' && 'By registering, you agree to Hamrah Bazar terms'}
           </p>
         </div>
       </main>

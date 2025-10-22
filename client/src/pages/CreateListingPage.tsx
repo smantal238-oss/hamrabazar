@@ -25,10 +25,12 @@ export default function CreateListingPage() {
     title: '',
     description: '',
     price: '',
+    currency: 'USD',
     category: '',
     city: '',
     imageUrl: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const createListingMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -89,7 +91,32 @@ export default function CreateListingPage() {
       return;
     }
 
-    createListingMutation.mutate(formData);
+    let imageUrl = '';
+    if (imageFile) {
+      const formDataImage = new FormData();
+      formDataImage.append('image', imageFile);
+      formDataImage.append('userId', user.id);
+      
+      try {
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formDataImage,
+        });
+        const uploadResult = await uploadResponse.json();
+        imageUrl = uploadResult.imageUrl;
+      } catch (error) {
+        toast({
+          title: language === 'fa' ? 'خطا' : language === 'ps' ? 'تیروتنه' : 'Error',
+          description: language === 'fa' ? 'خطا در آپلود تصویر' :
+                       language === 'ps' ? 'د انځور په اپلوډ کې تیروتنه' :
+                       'Error uploading image',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    createListingMutation.mutate({ ...formData, imageUrl });
   };
 
   const getCategoryName = (cat: typeof categories[number]) => {
@@ -156,10 +183,10 @@ export default function CreateListingPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="price">
-                      {language === 'fa' ? 'قیمت (دلار)' : language === 'ps' ? 'قیمت (ډالر)' : 'Price (USD)'}
+                      {language === 'fa' ? 'قیمت' : language === 'ps' ? 'قیمت' : 'Price'}
                     </Label>
                     <Input
                       id="price"
@@ -169,6 +196,21 @@ export default function CreateListingPage() {
                       placeholder="0"
                       data-testid="input-listing-price"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="currency">
+                      {language === 'fa' ? 'واحد پول' : language === 'ps' ? 'د پیسو واحد' : 'Currency'}
+                    </Label>
+                    <Select value={formData.currency} onValueChange={(value) => setFormData({ ...formData, currency: value })}>
+                      <SelectTrigger id="currency">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">💵 {language === 'fa' ? 'دلار' : language === 'ps' ? 'ډالر' : 'USD'}</SelectItem>
+                        <SelectItem value="AFN">؋ {language === 'fa' ? 'افغانی' : language === 'ps' ? 'افغانۍ' : 'AFN'}</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -213,19 +255,27 @@ export default function CreateListingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="imageUrl">
-                    {language === 'fa' ? 'لینک تصویر (اختیاری)' :
-                     language === 'ps' ? 'د انځور لینک (اختیاري)' :
-                     'Image URL (optional)'}
+                  <Label htmlFor="image">
+                    {language === 'fa' ? 'تصویر آگهی' :
+                     language === 'ps' ? 'د اعلان انځور' :
+                     'Listing Image'}
                   </Label>
                   <Input
-                    id="imageUrl"
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    placeholder="https://example.com/image.jpg"
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
                     data-testid="input-listing-image"
                   />
+                  {imageFile && (
+                    <div className="mt-2">
+                      <img 
+                        src={URL.createObjectURL(imageFile)} 
+                        alt="Preview" 
+                        className="w-32 h-32 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-3 justify-end">

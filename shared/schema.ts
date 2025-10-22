@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -8,20 +8,22 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   phone: text("phone").notNull().unique(),
   password: text("password").notNull(),
+  role: text("role").default("user").notNull(),
   twoFactorCode: text("two_factor_code"),
   twoFactorExpiry: timestamp("two_factor_expiry"),
   createdAt: timestamp("created_at").defaultNow(),
 });
-
 export const listings = pgTable("listings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
   description: text("description").notNull(),
   price: integer("price").notNull(),
+  currency: text("currency").default("USD").notNull(),
   category: text("category").notNull(),
   city: text("city").notNull(),
   imageUrl: text("image_url"),
   userId: varchar("user_id").notNull().references(() => users.id),
+  approved: boolean("approved").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -47,7 +49,22 @@ export const insertListingSchema = createInsertSchema(listings).omit({
   userId: true,
 });
 
+export const offlineFiles = pgTable("offline_files", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  filename: text("filename").notNull(),
+  filepath: text("filepath").notNull(),
+  filesize: integer("filesize").notNull(),
+  mimetype: text("mimetype").notNull(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertOfflineFileSchema = createInsertSchema(offlineFiles).omit({
   id: true,
   createdAt: true,
 });
@@ -58,6 +75,8 @@ export type InsertListing = z.infer<typeof insertListingSchema>;
 export type Listing = typeof listings.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
+export type InsertOfflineFile = z.infer<typeof insertOfflineFileSchema>;
+export type OfflineFile = typeof offlineFiles.$inferSelect;
 
 export const categories = [
   { id: "vehicles", nameFA: "وسایط نقلیه", namePS: "موټرونه", nameEN: "Vehicles", icon: "🚗" },

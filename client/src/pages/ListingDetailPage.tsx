@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { categories, cities, type Listing, type User } from '@shared/schema';
-import { Phone, MapPin, Clock, User as UserIcon, LogIn } from 'lucide-react';
+import { Phone, MapPin, Clock, User as UserIcon, LogIn, MessageCircle } from 'lucide-react';
 
 export default function ListingDetailPage() {
   const [, params] = useRoute('/listing/:id');
@@ -50,7 +50,7 @@ export default function ListingDetailPage() {
     const date = new Date(listing.createdAt);
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diff < 60) return language === 'fa' ? 'همین الان' : language === 'ps' ? 'اوس' : 'just now';
     if (diff < 3600) {
       const mins = Math.floor(diff / 60);
@@ -131,7 +131,7 @@ export default function ListingDetailPage() {
   return (
     <div className="min-h-screen bg-background">
       <FixedHeader showBackButton />
-      
+
       <main className="pt-20 pb-12">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="grid md:grid-cols-3 gap-6">
@@ -206,12 +206,25 @@ export default function ListingDetailPage() {
                     </span>
                   </div>
                   {currentUser ? (
-                    <Button className="w-full" data-testid="button-contact-seller">
-                      <Phone className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                      {language === 'fa' ? 'نمایش شماره تماس' :
-                       language === 'ps' ? 'د تلیفون شمیره وګورئ' :
-                       'Show Phone Number'}
-                    </Button>
+                    <div className="space-y-3">
+                      <Button className="w-full" data-testid="button-contact-seller">
+                        <Phone className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                        {language === 'fa' ? 'نمایش شماره تماس' :
+                         language === 'ps' ? 'د تلیفون شمیره وګورئ' :
+                         'Show Phone Number'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => navigate(`/messages/${listing.id}`)}
+                        data-testid="button-message-seller"
+                      >
+                        <MessageCircle className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                        {language === 'fa' ? 'پیام' :
+                         language === 'ps' ? 'پیغام' :
+                         'Message'}
+                      </Button>
+                    </div>
                   ) : (
                     <div className="space-y-3">
                       <p className="text-sm text-muted-foreground text-center">

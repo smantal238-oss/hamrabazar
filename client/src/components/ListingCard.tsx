@@ -8,6 +8,7 @@ interface ListingCardProps {
   id: string;
   title: string;
   price: number;
+  currency?: string;
   category: string;
   city: string;
   imageUrl?: string;
@@ -19,6 +20,7 @@ export default function ListingCard({
   id,
   title,
   price,
+  currency = 'USD',
   category,
   city,
   imageUrl,
@@ -91,7 +93,7 @@ export default function ListingCard({
         </h3>
         <div className="flex items-center justify-between mb-2">
           <span className="text-lg font-bold text-accent" data-testid={`text-price-${id}`}>
-            {price.toLocaleString()} {t('afghani')}
+            {currency === 'AFN' ? `${price.toLocaleString()} ؋` : `$${price.toLocaleString()}`}
           </span>
         </div>
         <div className="flex items-center gap-4 text-xs text-muted-foreground">

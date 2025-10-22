@@ -12,6 +12,7 @@ import AuthPage from "@/pages/AuthPage";
 import CreateListingPage from "@/pages/CreateListingPage";
 import DashboardPage from "@/pages/DashboardPage";
 import EditListingPage from "@/pages/EditListingPage";
+import AdminPage from "@/pages/AdminPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/create-listing" component={CreateListingPage} />
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/edit-listing/:id" component={EditListingPage} />
+      <Route path="/admin" component={AdminPage} />
       <Route component={NotFound} />
     </Switch>
   );

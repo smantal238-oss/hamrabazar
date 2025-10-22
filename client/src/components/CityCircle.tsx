@@ -23,7 +23,7 @@ export default function CityCircle({ city, onClick }: CityCircleProps) {
   };
 
   const hasImage = () => {
-    const availableImages = ['kabul', 'herat', 'balkh', 'kandahar', 'kunduz', 'badakhshan', 'ghor', 'panjshir', 'samangan', 'takhar'];
+    const availableImages = ['kabul', 'herat', 'balkh', 'kandahar', 'nangarhar', 'ghazni', 'bamyan', 'farah', 'kunduz', 'badakhshan', 'helmand', 'paktia', 'paktika', 'khost', 'logar', 'wardak', 'kapisa', 'parwan', 'panjshir', 'baghlan', 'takhar', 'samangan', 'sari-pul', 'jawzjan', 'faryab', 'badghis', 'ghor', 'daykundi', 'uruzgan', 'zabul', 'nimroz', 'laghman', 'kunar', 'nuristan'];
     return availableImages.includes(city.id);
   };
 
@@ -34,18 +34,16 @@ export default function CityCircle({ city, onClick }: CityCircleProps) {
       data-testid={`city-${city.id}`}
     >
       <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-card to-accent/10 border-2 border-border flex items-center justify-center transition-all duration-300 hover-elevate active-elevate-2 group-hover:scale-105 group-hover:border-accent shadow-sm overflow-hidden">
-        {hasImage() ? (
-          <img 
-            src={`/png/${getImageName()}.png`}
-            alt={getName()}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.nextElementSibling.style.display = 'flex';
-            }}
-          />
-        ) : null}
-        <div className={`w-full h-full flex items-center justify-center text-3xl md:text-4xl ${hasImage() ? 'hidden' : ''}`}>
+        <img 
+          src={`/png/${getImageName()}.png`}
+          alt={getName()}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+            e.currentTarget.nextElementSibling.style.display = 'flex';
+          }}
+        />
+        <div className="w-full h-full flex items-center justify-center text-3xl md:text-4xl" style={{display: 'none'}}>
           {city.icon}
         </div>
       </div>

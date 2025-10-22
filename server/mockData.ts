@@ -7,7 +7,7 @@ export const mockListings = [
     currency: "USD",
     category: "realestate",
     city: "kabul",
-    imageUrl: null,
+    imageUrl: "/png/kabul.png",
     userId: "user1",
     approved: true,
     createdAt: new Date()
@@ -20,7 +20,7 @@ export const mockListings = [
     currency: "AFN",
     category: "vehicles",
     city: "herat",
-    imageUrl: null,
+    imageUrl: "/png/herat.png",
     userId: "user2",
     approved: true,
     createdAt: new Date()
@@ -33,7 +33,7 @@ export const mockListings = [
     currency: "USD",
     category: "electronics", 
     city: "balkh",
-    imageUrl: null,
+    imageUrl: "/png/balkh.png",
     userId: "user3",
     approved: true,
     createdAt: new Date()
@@ -46,7 +46,7 @@ export const mockListings = [
     currency: "AFN",
     category: "electronics",
     city: "kabul",
-    imageUrl: null,
+    imageUrl: "/png/kabul.png",
     userId: "user1",
     approved: true,
     createdAt: new Date()
@@ -59,7 +59,7 @@ export const mockListings = [
     currency: "USD",
     category: "sports",
     city: "herat",
-    imageUrl: null,
+    imageUrl: "/png/herat.png",
     userId: "user2",
     approved: true,
     createdAt: new Date()
@@ -72,7 +72,7 @@ export const mockListings = [
     currency: "USD",
     category: "realestate",
     city: "kabul",
-    imageUrl: null,
+    imageUrl: "/png/kabul.png",
     userId: "user5",
     approved: true,
     createdAt: new Date()

@@ -31,13 +31,26 @@ export class DbStorage implements IStorage {
   }
 
   async getUserByPhone(phone: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
-    return result[0];
+    try {
+      if (!phone || typeof phone !== 'string') {
+        return undefined;
+      }
+      const result = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error('Error getting user by phone:', error);
+      return undefined;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const result = await db.insert(users).values(insertUser).returning();
-    return result[0];
+    try {
+      const result = await db.insert(users).values(insertUser).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw new Error('Failed to create user');
+    }
   }
 
   async getListing(id: string): Promise<Listing | undefined> {

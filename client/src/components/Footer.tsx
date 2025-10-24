@@ -42,15 +42,21 @@ export default function Footer() {
                   {t('home')}
                 </span>
               </Link>
-              <a href="#about" className="text-sm text-muted-foreground hover:text-foreground transition-colors hover-elevate px-2 py-1 rounded-md inline-block" data-testid="link-footer-about">
-                {t('aboutUs')}
-              </a>
-              <a href="#terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors hover-elevate px-2 py-1 rounded-md inline-block" data-testid="link-footer-terms">
-                {t('termsOfService')}
-              </a>
-              <a href="#privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors hover-elevate px-2 py-1 rounded-md inline-block" data-testid="link-footer-privacy">
-                {t('privacyPolicy')}
-              </a>
+              <Link href="/about">
+                <span className="text-sm text-muted-foreground hover:text-foreground transition-colors hover-elevate px-2 py-1 rounded-md inline-block cursor-pointer" data-testid="link-footer-about">
+                  {t('aboutUs')}
+                </span>
+              </Link>
+              <Link href="/terms">
+                <span className="text-sm text-muted-foreground hover:text-foreground transition-colors hover-elevate px-2 py-1 rounded-md inline-block cursor-pointer" data-testid="link-footer-terms">
+                  {t('termsOfService')}
+                </span>
+              </Link>
+              <Link href="/privacy">
+                <span className="text-sm text-muted-foreground hover:text-foreground transition-colors hover-elevate px-2 py-1 rounded-md inline-block cursor-pointer" data-testid="link-footer-privacy">
+                  {t('privacyPolicy')}
+                </span>
+              </Link>
             </nav>
           </div>
 
@@ -60,17 +66,13 @@ export default function Footer() {
             </h4>
             <div className="flex flex-col gap-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4" />
-                <span data-testid="text-footer-phone">+93 700 000 000</span>
-              </div>
-              <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
                 <span data-testid="text-footer-email">info@hamrahbazar.af</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 <span data-testid="text-footer-location">
-                  {language === 'fa' ? 'کابل، افغانستان' : language === 'ps' ? 'کابل، افغانستان' : 'Kabul, Afghanistan'}
+                  {language === 'fa' ? 'مزار شریف، افغانستان' : language === 'ps' ? 'مزار شریف، افغانستان' : 'Mazar-i-Sharif, Afghanistan'}
                 </span>
               </div>
             </div>

@@ -80,10 +80,11 @@ export const mockListings = [
 ];
 
 export const mockUsers = [
-  { id: "admin", name: "ادمین", phone: "admin123", password: "admin@secure2024", role: "admin", createdAt: new Date() },
-  { id: "user1", name: "احمد", phone: "0700001", password: "123", role: "user", createdAt: new Date() },
-  { id: "user2", name: "فاطمه", phone: "0700002", password: "123", role: "user", createdAt: new Date() },
-  { id: "user3", name: "علی", phone: "0700003", password: "123", role: "user", createdAt: new Date() },
-  { id: "user4", name: "کاربر تست", phone: "+93 700500500", password: "1234", role: "user", createdAt: new Date() },
-  { id: "user5", name: "محمد رضا", phone: "+93 700600600", password: "5678", role: "user", createdAt: new Date() }
+  { id: "admin", name: "ادمین", phone: "+93700999999", password: "admin123", role: "admin", createdAt: new Date() },
+  { id: "admin2", name: "ادمین جدید", phone: "+93700111111", password: "123456", role: "admin", createdAt: new Date() },
+  { id: "user1", name: "احمد", phone: "0700001", password: process.env.TEST_PASSWORD || "123", role: "user", createdAt: new Date() },
+  { id: "user2", name: "فاطمه", phone: "0700002", password: process.env.TEST_PASSWORD || "123", role: "user", createdAt: new Date() },
+  { id: "user3", name: "علی", phone: "0700003", password: process.env.TEST_PASSWORD || "123", role: "user", createdAt: new Date() },
+  { id: "user4", name: "کاربر تست", phone: "+93 700500500", password: process.env.TEST_PASSWORD || "1234", role: "user", createdAt: new Date() },
+  { id: "user5", name: "محمد رضا", phone: "+93 700600600", password: process.env.TEST_PASSWORD || "5678", role: "user", createdAt: new Date() }
 ];

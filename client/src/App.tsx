@@ -8,11 +8,14 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import HomePage from "@/pages/HomePage";
 import ListingDetailPage from "@/pages/ListingDetailPage";
-import AuthPage from "@/pages/AuthPage";
+import AuthPage from "@/pages/AuthPageWithTwoFactor";
 import CreateListingPage from "@/pages/CreateListingPage";
 import DashboardPage from "@/pages/DashboardPage";
 import EditListingPage from "@/pages/EditListingPage";
-import AdminPage from "@/pages/AdminPage";
+import AdminPage from "@/pages/AdminPageNew";
+import AboutPage from "@/pages/AboutPage";
+import TermsPage from "@/pages/TermsPage";
+import PrivacyPage from "@/pages/PrivacyPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,6 +28,9 @@ function Router() {
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/edit-listing/:id" component={EditListingPage} />
       <Route path="/admin" component={AdminPage} />
+      <Route path="/about" component={AboutPage} />
+      <Route path="/terms" component={TermsPage} />
+      <Route path="/privacy" component={PrivacyPage} />
       <Route component={NotFound} />
     </Switch>
   );

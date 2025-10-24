@@ -9,21 +9,22 @@ import CityCircle from '@/components/CityCircle';
 import ListingCard from '@/components/ListingCard';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { categories, cities, type Listing } from '@shared/schema';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 
 export default function HomePage() {
   const [, navigate] = useLocation();
-  const { t } = useLanguage();
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedCity, setSelectedCity] = useState<string>('');
+  const { t, language } = useLanguage();
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const queryParams = new URLSearchParams();
   if (searchQuery) queryParams.append('query', searchQuery);
-  if (selectedCategory) queryParams.append('category', selectedCategory);
-  if (selectedCity) queryParams.append('city', selectedCity);
+  selectedCategories.forEach(cat => queryParams.append('category', cat));
+  selectedCities.forEach(city => queryParams.append('city', city));
   
   const queryString = queryParams.toString();
   const queryKey = queryString ? `/api/listings?${queryString}` : '/api/listings';
@@ -34,14 +35,58 @@ export default function HomePage() {
 
   const handleSearch = (query: string, category: string, city: string) => {
     setSearchQuery(query);
-    setSelectedCategory(category === 'all' ? '' : category);
-    setSelectedCity(city);
+    if (category && category !== 'all') {
+      setSelectedCategories([category]);
+    }
+    if (city) {
+      setSelectedCities([city]);
+    }
   };
 
   const clearFilters = () => {
     setSearchQuery('');
-    setSelectedCategory('');
-    setSelectedCity('');
+    setSelectedCategories([]);
+    setSelectedCities([]);
+  };
+
+  const toggleCategory = (categoryId: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  const toggleCity = (cityId: string) => {
+    setSelectedCities(prev => 
+      prev.includes(cityId) 
+        ? prev.filter(id => id !== cityId)
+        : [...prev, cityId]
+    );
+  };
+
+  const removeCategory = (categoryId: string) => {
+    setSelectedCategories(prev => prev.filter(id => id !== categoryId));
+  };
+
+  const removeCity = (cityId: string) => {
+    setSelectedCities(prev => prev.filter(id => id !== cityId));
+  };
+
+  const getCategoryName = (categoryId: string) => {
+    const category = categories.find(cat => cat.id === categoryId);
+    if (!category) return categoryId;
+    if (language === 'fa') return category.nameFA;
+    if (language === 'ps') return category.namePS;
+    return category.nameEN;
+  };
+
+  const getCityName = (cityId: string) => {
+    const city = cities.find(c => c.id === cityId);
+    if (!city) return cityId;
+    if (language === 'fa') return city.nameFA;
+    if (language === 'ps') return city.namePS;
+    return city.nameEN;
   };
 
   return (
@@ -62,15 +107,17 @@ export default function HomePage() {
             <div className="relative">
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                 {categories.map(cat => (
-                  <CategoryCircle
-                    key={cat.id}
-                    category={cat}
-                    onClick={() => {
-                      setSelectedCategory(cat.id);
-                      setSelectedCity('');
-                      setSearchQuery('');
-                    }}
-                  />
+                  <div key={cat.id} className="relative">
+                    <CategoryCircle
+                      category={cat}
+                      onClick={() => toggleCategory(cat.id)}
+                    />
+                    {selectedCategories.includes(cat.id) && (
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                        <span className="text-xs text-primary-foreground">✓</span>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
@@ -78,32 +125,55 @@ export default function HomePage() {
 
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('afghanCities')}</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-foreground">شهرهای افغانستان</h2>
             </div>
             <div className="relative">
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                 {cities.map(city => (
-                  <CityCircle
-                    key={city.id}
-                    city={city}
-                    onClick={() => {
-                      setSelectedCity(city.id);
-                      setSelectedCategory('');
-                      setSearchQuery('');
-                    }}
-                  />
+                  <div key={city.id} className="relative">
+                    <CityCircle
+                      city={city}
+                      onClick={() => toggleCity(city.id)}
+                    />
+                    {selectedCities.includes(city.id) && (
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-accent rounded-full flex items-center justify-center">
+                        <span className="text-xs text-accent-foreground">✓</span>
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {(selectedCategory || selectedCity || searchQuery) && (
-            <div className="mb-4">
+          {(selectedCategories.length > 0 || selectedCities.length > 0 || searchQuery) && (
+            <div className="mb-4 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                {selectedCategories.map(categoryId => (
+                  <Badge key={categoryId} variant="secondary" className="flex items-center gap-1">
+                    {getCategoryName(categoryId)}
+                    <X 
+                      className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                      onClick={() => removeCategory(categoryId)}
+                    />
+                  </Badge>
+                ))}
+                {selectedCities.map(cityId => (
+                  <Badge key={cityId} variant="outline" className="flex items-center gap-1">
+                    {getCityName(cityId)}
+                    <X 
+                      className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                      onClick={() => removeCity(cityId)}
+                    />
+                  </Badge>
+                ))}
+              </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={clearFilters}
                 data-testid="button-clear-filters"
+                className="font-semibold"
               >
                 {t('cancel')}
               </Button>
@@ -136,6 +206,7 @@ export default function HomePage() {
                     id={listing.id}
                     title={listing.title}
                     price={listing.price}
+                    currency={listing.currency}
                     category={listing.category}
                     city={listing.city}
                     imageUrl={listing.imageUrl || undefined}

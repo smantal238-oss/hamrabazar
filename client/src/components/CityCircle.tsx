@@ -22,10 +22,7 @@ export default function CityCircle({ city, onClick }: CityCircleProps) {
     return city.id;
   };
 
-  const hasImage = () => {
-    const availableImages = ['kabul', 'herat', 'balkh', 'kandahar', 'nangarhar', 'ghazni', 'bamyan', 'farah', 'kunduz', 'badakhshan', 'helmand', 'paktia', 'paktika', 'khost', 'logar', 'wardak', 'kapisa', 'parwan', 'panjshir', 'baghlan', 'takhar', 'samangan', 'sari-pul', 'jawzjan', 'faryab', 'badghis', 'ghor', 'daykundi', 'uruzgan', 'zabul', 'nimroz', 'laghman', 'kunar', 'nuristan'];
-    return availableImages.includes(city.id);
-  };
+
 
   return (
     <div

@@ -89,7 +89,7 @@ export default function FixedHeader({ showBackButton = false }: FixedHeaderProps
           {user ? (
             <>
               <Link href="/create-listing">
-                <Button variant="default" size="sm" data-testid="button-create-listing" className="hidden md:flex">
+                <Button variant="default" size="sm" data-testid="button-create-listing" className="hidden md:flex font-semibold">
                   <Plus className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                   {language === 'fa' ? 'ثبت آگهی' : language === 'ps' ? 'اعلان ثبت' : 'Post Ad'}
                 </Button>
@@ -125,7 +125,7 @@ export default function FixedHeader({ showBackButton = false }: FixedHeaderProps
           ) : (
             <>
               <Link href="/auth">
-                <Button variant="default" size="sm" data-testid="button-login" className="hidden md:flex">
+                <Button variant="default" size="default" data-testid="button-login" className="hidden md:flex px-6 font-semibold">
                   <LogIn className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                   {t('login')}
                 </Button>

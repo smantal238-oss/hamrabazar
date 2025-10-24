@@ -7,17 +7,28 @@ import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import { FileManager } from "./fileManager";
+import rateLimit from "express-rate-limit";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const fileManager = new FileManager();
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests'
+});
+
 const upload = multer({
   storage: multer.diskStorage({
-    destination: path.join(__dirname, '../public/uploads'),
+    destination: (req, file, cb) => {
+      const uploadPath = path.join(__dirname, '../public/uploads');
+      cb(null, uploadPath);
+    },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, uniqueSuffix + path.extname(file.originalname));
+      const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
+      cb(null, uniqueSuffix + '_' + sanitizedName);
     }
   }),
   fileFilter: (req, file, cb) => {
@@ -33,6 +44,7 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  app.use(limiter);
   app.post("/api/auth/register", async (req, res) => {
     try {
       const validatedData = insertUserSchema.parse(req.body);
@@ -70,6 +82,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid phone or password" });
       }
 
+      // Generate 2FA code
+      const twoFactorCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const twoFactorExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+      
+      // Store 2FA code (in real app, save to database)
+      global.twoFactorCodes = global.twoFactorCodes || {};
+      global.twoFactorCodes[phone] = { code: twoFactorCode, expiry: twoFactorExpiry };
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`2FA Code for ${phone}: ${twoFactorCode}`);
+      }
+      
+      res.json({ requiresTwoFactor: true, message: "2FA code sent" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/auth/verify-2fa", async (req, res) => {
+    try {
+      const { phone, code } = req.body;
+      const { mockUsers } = await import("./mockData");
+      
+      const storedCode = global.twoFactorCodes?.[phone];
+      if (!storedCode || storedCode.expiry < new Date()) {
+        return res.status(401).json({ message: "Code expired or invalid" });
+      }
+      
+      if (storedCode.code !== code) {
+        return res.status(401).json({ message: "Invalid verification code" });
+      }
+      
+      // Clear used code
+      if (global.twoFactorCodes && global.twoFactorCodes[phone]) {
+        delete global.twoFactorCodes[phone];
+      }
+      
+      const user = mockUsers.find(u => u.phone === phone);
       const { password: _, ...userWithoutPassword } = user;
       res.json({ user: userWithoutPassword });
     } catch (error: any) {
@@ -102,12 +152,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use mock data as fallback
       let listings = mockListings;
       
-      if (category && category !== 'all') {
-        listings = listings.filter(l => l.category === category);
+      // Handle multiple categories
+      if (category) {
+        const categories = Array.isArray(category) ? category : [category];
+        const validCategories = categories.filter(cat => cat !== 'all');
+        if (validCategories.length > 0) {
+          listings = listings.filter(l => validCategories.includes(l.category));
+        }
       }
       
+      // Handle multiple cities
       if (city) {
-        listings = listings.filter(l => l.city === city);
+        const cities = Array.isArray(city) ? city : [city];
+        if (cities.length > 0) {
+          listings = listings.filter(l => cities.includes(l.city));
+        }
       }
       
       if (query) {

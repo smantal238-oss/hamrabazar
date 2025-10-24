@@ -43,14 +43,17 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <div className="flex flex-col md:flex-row gap-3">
-        <Input
-          type="text"
-          placeholder={t('searchPlaceholder')}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="flex-1"
-          data-testid="input-search-query"
-        />
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder={t('searchPlaceholder')}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="pl-10"
+            data-testid="input-search-query"
+          />
+        </div>
         <Select value={category} onValueChange={setCategory}>
           <SelectTrigger className="w-full md:w-[200px]" data-testid="select-search-category">
             <SelectValue placeholder={t('selectCategory')} />
@@ -76,7 +79,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             ))}
           </SelectContent>
         </Select>
-        <Button type="submit" className="w-full md:w-auto" data-testid="button-search">
+        <Button type="submit" className="w-full md:w-auto font-semibold" data-testid="button-search">
           <Search className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
           {t('search')}
         </Button>

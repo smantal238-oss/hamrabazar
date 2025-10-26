@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test 2FA System</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .form { margin: 20px 0; }
+        input, button { padding: 10px; margin: 5px; }
+        .result { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Test 2FA System</h1>
+    
+    <div class="form">
+        <h3>Step 1: Send Code</h3>
+        <input type="text" id="phone" placeholder="Phone number (e.g., +93700000000)" value="+93700000000">
+        <button onclick="sendCode()">Send Code</button>
+    </div>
+    
+    <div class="form">
+        <h3>Step 2: Verify Code</h3>
+        <input type="text" id="name" placeholder="Name (for new users)">
+        <input type="text" id="code" placeholder="6-digit code">
+        <button onclick="verifyCode()">Verify Code</button>
+    </div>
+    
+    <div id="result" class="result"></div>
+
+    <script>
+        let currentPhone = '';
+        
+        async function sendCode() {
+            const phone = document.getElementById('phone').value;
+            currentPhone = phone;
+            
+            document.getElementById('result').innerHTML = 'Sending...';
+            
+            try {
+                console.log('Sending request to:', '/api/auth/send-code');
+                console.log('Phone:', phone);
+                
+                const response = await fetch('/api/auth/send-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                document.getElementById('result').innerHTML = 
+                    `<strong>Status:</strong> ${response.status}<br>
+                     <strong>Message:</strong> ${data.message}<br>
+                     <strong>New User:</strong> ${data.isNewUser ? 'Yes' : 'No'}<br>
+                     <strong>Check console for code!</strong>`;
+                     
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = 
+                    `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+        
+        async function verifyCode() {
+            const code = document.getElementById('code').value;
+            const name = document.getElementById('name').value;
+            
+            try {
+                const response = await fetch('/api/auth/verify-2fa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: currentPhone, code, name })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = 
+                    `<strong>Verify Code Result:</strong><br>
+                     Status: ${response.status}<br>
+                     User: ${data.user ? data.user.name + ' (' + data.user.role + ')' : 'None'}<br>
+                     Response: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

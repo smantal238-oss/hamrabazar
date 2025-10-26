@@ -1,3 +1,5 @@
+// فایل server/mockData.ts را با این محتوا جایگزین کنید:
+
 export const mockListings = [
   {
     id: "1",

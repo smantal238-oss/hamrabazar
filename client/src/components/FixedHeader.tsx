@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'wouter';
-import { ArrowRight, Home, LogIn, LogOut, Moon, Sun, Globe, LayoutDashboard, Plus } from 'lucide-react';
+import { ArrowRight, Home, LogIn, LogOut, Moon, Sun, Globe, LayoutDashboard, Plus, MessageCircle, Heart, User } from 'lucide-react';
+import MessageNotification from '@/components/MessageNotification';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -113,6 +114,19 @@ export default function FixedHeader({ showBackButton = false }: FixedHeaderProps
                   <DropdownMenuItem onClick={() => navigate('/dashboard')} data-testid="menu-item-dashboard">
                     <LayoutDashboard className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
                     {language === 'fa' ? 'آگهی‌های من' : language === 'ps' ? 'زما اعلانونه' : 'My Listings'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/all-messages')} data-testid="menu-item-messages" className="relative">
+                    <MessageCircle className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                    {language === 'fa' ? 'پیامها' : language === 'ps' ? 'پیغامونه' : 'Messages'}
+                    <MessageNotification />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/favorites')} data-testid="menu-item-favorites">
+                    <Heart className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                    {language === 'fa' ? 'علاقهمندیها' : language === 'ps' ? 'خوښې' : 'Favorites'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/profile')} data-testid="menu-item-profile">
+                    <User className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                    {language === 'fa' ? 'پروفایل' : language === 'ps' ? 'پروفایل' : 'Profile'}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout} data-testid="menu-item-logout">

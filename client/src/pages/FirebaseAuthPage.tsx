@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
+import { signInWithPhoneNumber, RecaptchaVerifier, ConfirmationResult } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import FixedHeader from '@/components/FixedHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
-export default function AuthPage() {
+export default function FirebaseAuthPage() {
   const [, navigate] = useLocation();
   const { t } = useLanguage();
   const { login } = useAuth();
@@ -18,16 +20,25 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [isAdminLogin, setIsAdminLogin] = useState(false);
   const [currentPhone, setCurrentPhone] = useState('');
-  const [isNewUser, setIsNewUser] = useState(false);
-  const [userName, setUserName] = useState('');
 
   const [phoneData, setPhoneData] = useState({
     countryCode: '+93',
     phone: '',
   });
 
+  const ADMIN_PHONES = ['+93700000000', '+93700000001'];
 
+  const setupRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => console.log('reCAPTCHA solved')
+      });
+    }
+  };
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +46,12 @@ export default function AuthPage() {
     
     try {
       const fullPhone = phoneData.countryCode + phoneData.phone;
+      setCurrentPhone(fullPhone);
+      
+      // Check if admin
+      setIsAdminLogin(ADMIN_PHONES.includes(fullPhone));
+      
+      // Use backend for all users
       const response = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -43,25 +60,23 @@ export default function AuthPage() {
       
       const data = await response.json();
       
-      if (response.ok && data.requiresTwoFactor) {
-        setCurrentPhone(fullPhone);
-        setIsNewUser(data.isNewUser);
+      if (response.ok) {
         setShowVerification(true);
         toast({
           title: 'کد ارسال شد',
-          description: data.message + (data.isNewUser ? ' (کاربر جدید)' : ' (ورود)'),
+          description: data.message,
         });
       } else {
         toast({
           title: 'خطا',
-          description: data.message || 'شماره تلفن یافت نشد',
+          description: data.message,
           variant: 'destructive',
         });
       }
     } catch (error: any) {
       toast({
         title: 'خطا',
-        description: 'خطا در ارسال کد',
+        description: error.message || 'خطا در ارسال کد',
         variant: 'destructive',
       });
     } finally {
@@ -77,11 +92,7 @@ export default function AuthPage() {
       const response = await fetch('/api/auth/verify-2fa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          phone: currentPhone, 
-          code: verificationCode,
-          name: isNewUser ? userName : undefined
-        })
+        body: JSON.stringify({ phone: currentPhone, code: verificationCode })
       });
       
       const data = await response.json();
@@ -89,7 +100,7 @@ export default function AuthPage() {
       if (response.ok && data.user) {
         login(data.user);
         toast({
-          title: data.isNewUser ? 'ثبت نام موفق' : 'ورود موفق',
+          title: 'ورود موفق',
           description: data.message,
         });
         
@@ -108,7 +119,7 @@ export default function AuthPage() {
     } catch (error: any) {
       toast({
         title: 'خطا',
-        description: 'خطا در تایید کد',
+        description: 'کد تایید نادرست است',
         variant: 'destructive',
       });
     } finally {
@@ -148,7 +159,7 @@ export default function AuthPage() {
                       <Input
                         id="phone"
                         type="tel"
-                        placeholder="700111111"
+                        placeholder="700000000"
                         value={phoneData.phone}
                         onChange={(e) => setPhoneData({ ...phoneData, phone: e.target.value })}
                         required
@@ -162,19 +173,6 @@ export default function AuthPage() {
                 </form>
               ) : (
                 <form onSubmit={handleVerifyCode} className="space-y-4">
-                  {isNewUser && (
-                    <div className="space-y-2">
-                      <Label htmlFor="user-name">نام شما</Label>
-                      <Input
-                        id="user-name"
-                        type="text"
-                        placeholder="نام خود را وارد کنید"
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
-                        required={isNewUser}
-                      />
-                    </div>
-                  )}
                   <div className="space-y-2">
                     <Label htmlFor="verification-code">کد تایید</Label>
                     <Input
@@ -186,9 +184,9 @@ export default function AuthPage() {
                       required
                       maxLength={6}
                     />
-                    {isNewUser && (
+                    {isAdminLogin && (
                       <p className="text-sm text-muted-foreground">
-                        شما کاربر جدید هستید. حساب جدید برای شما ایجاد میشود.
+                        کد تایید در کنسول سرور نمایش داده شده است
                       </p>
                     )}
                   </div>
@@ -200,19 +198,13 @@ export default function AuthPage() {
                       onClick={() => {
                         setShowVerification(false);
                         setVerificationCode('');
-                        setCurrentPhone('');
-                        setIsNewUser(false);
-                        setUserName('');
+                        setIsAdminLogin(false);
                       }}
                     >
                       بازگشت
                     </Button>
                     <Button type="submit" className="flex-1 font-semibold" disabled={isLoading}>
-                      {isLoading ? (
-                        isNewUser ? 'در حال ثبت نام...' : 'در حال ورود...'
-                      ) : (
-                        isNewUser ? 'ثبت نام' : 'ورود'
-                      )}
+                      {isLoading ? 'در حال تایید...' : 'تایید'}
                     </Button>
                   </div>
                 </form>

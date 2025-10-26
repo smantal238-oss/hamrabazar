@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import express, { type Request, Response, NextFunction } from "express";
+import passport from 'passport';
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
@@ -14,8 +15,14 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(passport.initialize());
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 app.use('/png', express.static(path.join(__dirname, '../public/png')));
+
+// Serve test page
+app.get('/test-2fa', (req, res) => {
+  res.sendFile(path.join(__dirname, '../test-2fa.html'));
+});
 
 app.use((req, res, next) => {
   const start = Date.now();

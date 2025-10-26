@@ -3,7 +3,9 @@ import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import FixedHeader from '@/components/FixedHeader';
 import Footer from '@/components/Footer';
+import InstallPWA from '@/components/InstallPWA';
 import SearchBar from '@/components/SearchBar';
+import AdvancedSearch, { type SearchFilters } from '@/components/AdvancedSearch';
 import CategoryCircle from '@/components/CategoryCircle';
 import CityCircle from '@/components/CityCircle';
 import ListingCard from '@/components/ListingCard';
@@ -20,6 +22,7 @@ export default function HomePage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filters, setFilters] = useState<SearchFilters>({});
 
   const queryParams = new URLSearchParams();
   if (searchQuery) queryParams.append('query', searchQuery);
@@ -29,9 +32,23 @@ export default function HomePage() {
   const queryString = queryParams.toString();
   const queryKey = queryString ? `/api/listings?${queryString}` : '/api/listings';
 
-  const { data: listings, isLoading } = useQuery<Listing[]>({
+  const { data: rawListings, isLoading } = useQuery<Listing[]>({
     queryKey: [queryKey],
   });
+
+  let listings = rawListings || [];
+  
+  if (filters.minPrice) {
+    listings = listings.filter(l => l.price >= filters.minPrice!);
+  }
+  if (filters.maxPrice) {
+    listings = listings.filter(l => l.price <= filters.maxPrice!);
+  }
+  if (filters.sortBy === 'price-low') {
+    listings = [...listings].sort((a, b) => a.price - b.price);
+  } else if (filters.sortBy === 'price-high') {
+    listings = [...listings].sort((a, b) => b.price - a.price);
+  }
 
   const handleSearch = (query: string, category: string, city: string) => {
     setSearchQuery(query);
@@ -98,6 +115,9 @@ export default function HomePage() {
           <div className="bg-card rounded-lg border border-border shadow-sm p-6 mb-8">
             <h2 className="text-xl md:text-2xl font-bold mb-4 text-foreground">{t('search')}</h2>
             <SearchBar onSearch={handleSearch} />
+            <div className="mt-4">
+              <AdvancedSearch onSearch={setFilters} />
+            </div>
           </div>
 
           <div className="mb-8">
@@ -227,6 +247,7 @@ export default function HomePage() {
       </main>
 
       <Footer />
+      <InstallPWA />
     </div>
   );
 }

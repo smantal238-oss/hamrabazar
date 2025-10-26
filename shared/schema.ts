@@ -7,8 +7,11 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   phone: text("phone").notNull().unique(),
+  email: text("email"),
   password: text("password").notNull(),
   role: text("role").default("user").notNull(),
+  avatar: text("avatar"),
+  bio: text("bio"),
   twoFactorCode: text("two_factor_code"),
   twoFactorExpiry: timestamp("two_factor_expiry"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -22,6 +25,9 @@ export const listings = pgTable("listings", {
   category: text("category").notNull(),
   city: text("city").notNull(),
   imageUrl: text("image_url"),
+  images: text("images").array(),
+  location: text("location"),
+  views: integer("views").default(0),
   userId: varchar("user_id").notNull().references(() => users.id),
   approved: boolean("approved").default(false),
   createdAt: timestamp("created_at").defaultNow(),
@@ -33,6 +39,24 @@ export const messages = pgTable("messages", {
   senderId: varchar("sender_id").notNull().references(() => users.id),
   receiverId: varchar("receiver_id").notNull().references(() => users.id),
   content: text("content").notNull(),
+  read: boolean("read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const favorites = pgTable("favorites", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  listingId: varchar("listing_id").notNull().references(() => listings.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const reports = pgTable("reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  listingId: varchar("listing_id").notNull().references(() => listings.id),
+  reporterId: varchar("reporter_id").notNull().references(() => users.id),
+  reason: text("reason").notNull(),
+  description: text("description"),
+  status: text("status").default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -69,6 +93,16 @@ export const insertOfflineFileSchema = createInsertSchema(offlineFiles).omit({
   createdAt: true,
 });
 
+export const insertFavoriteSchema = createInsertSchema(favorites).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertReportSchema = createInsertSchema(reports).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertListing = z.infer<typeof insertListingSchema>;
@@ -77,6 +111,10 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 export type InsertOfflineFile = z.infer<typeof insertOfflineFileSchema>;
 export type OfflineFile = typeof offlineFiles.$inferSelect;
+export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
+export type Favorite = typeof favorites.$inferSelect;
+export type InsertReport = z.infer<typeof insertReportSchema>;
+export type Report = typeof reports.$inferSelect;
 
 export const categories = [
   { id: "vehicles", nameFA: "وسایط نقلیه", namePS: "موټرونه", nameEN: "Vehicles", icon: "🚗" },

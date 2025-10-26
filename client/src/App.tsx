@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import HomePage from "@/pages/HomePage";
 import ListingDetailPage from "@/pages/ListingDetailPage";
-import AuthPage from "@/pages/AuthPageWithTwoFactor";
+import AuthPage from "@/pages/AuthPage";
 import CreateListingPage from "@/pages/CreateListingPage";
 import DashboardPage from "@/pages/DashboardPage";
 import EditListingPage from "@/pages/EditListingPage";
@@ -16,6 +16,10 @@ import AdminPage from "@/pages/AdminPageNew";
 import AboutPage from "@/pages/AboutPage";
 import TermsPage from "@/pages/TermsPage";
 import PrivacyPage from "@/pages/PrivacyPage";
+import MessagesPage from "@/pages/MessagesPage";
+import AllMessagesPage from "@/pages/AllMessagesPage";
+import FavoritesPage from "@/pages/FavoritesPage";
+import ProfilePage from "@/pages/ProfilePage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -31,6 +35,10 @@ function Router() {
       <Route path="/about" component={AboutPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/messages/:listingId" component={MessagesPage} />
+      <Route path="/all-messages" component={AllMessagesPage} />
+      <Route path="/favorites" component={FavoritesPage} />
+      <Route path="/profile" component={ProfilePage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -31,6 +31,7 @@ export default function CreateListingPage() {
     imageUrl: '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [additionalImages, setAdditionalImages] = useState<File[]>([]);
 
   const createListingMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -92,6 +93,8 @@ export default function CreateListingPage() {
     }
 
     let imageUrl = '';
+    let images: string[] = [];
+    
     if (imageFile) {
       const formDataImage = new FormData();
       formDataImage.append('image', imageFile);
@@ -116,7 +119,24 @@ export default function CreateListingPage() {
       }
     }
 
-    createListingMutation.mutate({ ...formData, imageUrl });
+    if (additionalImages.length > 0) {
+      const formDataImages = new FormData();
+      additionalImages.forEach(file => formDataImages.append('images', file));
+      formDataImages.append('userId', user.id);
+      
+      try {
+        const uploadResponse = await fetch('/api/upload-multiple', {
+          method: 'POST',
+          body: formDataImages,
+        });
+        const uploadResult = await uploadResponse.json();
+        images = uploadResult.imageUrls;
+      } catch (error) {
+        console.error('Error uploading additional images:', error);
+      }
+    }
+
+    createListingMutation.mutate({ ...formData, imageUrl, images });
   };
 
   const getCategoryName = (cat: typeof categories[number]) => {
@@ -256,9 +276,9 @@ export default function CreateListingPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="image">
-                    {language === 'fa' ? 'تصویر آگهی' :
-                     language === 'ps' ? 'د اعلان انځور' :
-                     'Listing Image'}
+                    {language === 'fa' ? 'تصویر اصلی' :
+                     language === 'ps' ? 'اصلي انځور' :
+                     'Main Image'}
                   </Label>
                   <Input
                     id="image"
@@ -274,6 +294,36 @@ export default function CreateListingPage() {
                         alt="Preview" 
                         className="w-32 h-32 object-cover rounded-lg"
                       />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="additional-images">
+                    {language === 'fa' ? 'تصاویر اضافی (حداکثر 5)' :
+                     language === 'ps' ? 'اضافي انځورونه (تر 5 پورې)' :
+                     'Additional Images (max 5)'}
+                  </Label>
+                  <Input
+                    id="additional-images"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []).slice(0, 5);
+                      setAdditionalImages(files);
+                    }}
+                  />
+                  {additionalImages.length > 0 && (
+                    <div className="mt-2 flex gap-2 flex-wrap">
+                      {additionalImages.map((file, i) => (
+                        <img 
+                          key={i}
+                          src={URL.createObjectURL(file)} 
+                          alt={`Preview ${i + 1}`} 
+                          className="w-20 h-20 object-cover rounded-lg"
+                        />
+                      ))}
                     </div>
                   )}
                 </div>

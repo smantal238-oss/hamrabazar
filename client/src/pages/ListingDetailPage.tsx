@@ -8,7 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { categories, cities, type Listing, type User } from '@shared/schema';
-import { Phone, MapPin, Clock, User as UserIcon, LogIn, MessageCircle } from 'lucide-react';
+import { Phone, MapPin, Clock, User as UserIcon, LogIn, MessageCircle, Eye } from 'lucide-react';
+import FavoriteButton from '@/components/FavoriteButton';
+import ReportDialog from '@/components/ReportDialog';
+import ShareDialog from '@/components/ShareDialog';
+import ImageGallery from '@/components/ImageGallery';
 
 export default function ListingDetailPage() {
   const [, params] = useRoute('/listing/:id');
@@ -136,15 +140,14 @@ export default function ListingDetailPage() {
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="grid md:grid-cols-3 gap-6">
             <div className="md:col-span-2 space-y-6">
-              <Card>
-                {listing.imageUrl ? (
-                  <img
-                    src={listing.imageUrl}
-                    alt={listing.title}
-                    className="w-full aspect-video object-cover rounded-t-lg"
+              <Card className="p-4">
+                {listing.imageUrl || (listing.images && listing.images.length > 0) ? (
+                  <ImageGallery 
+                    images={listing.images || []} 
+                    mainImage={listing.imageUrl || undefined}
                   />
                 ) : (
-                  <div className="aspect-video bg-muted flex items-center justify-center text-8xl">
+                  <div className="aspect-video bg-muted flex items-center justify-center text-8xl rounded-lg">
                     {categories.find(c => c.id === listing.category)?.icon || '📦'}
                   </div>
                 )}
@@ -154,9 +157,12 @@ export default function ListingDetailPage() {
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <CardTitle className="text-2xl mb-2" data-testid="text-listing-title">
-                        {listing.title}
-                      </CardTitle>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <CardTitle className="text-2xl flex-1" data-testid="text-listing-title">
+                          {listing.title}
+                        </CardTitle>
+                        <FavoriteButton listingId={listing.id} />
+                      </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
@@ -172,10 +178,14 @@ export default function ListingDetailPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-6">
+                  <div className="mb-6 flex items-center justify-between">
                     <p className="text-3xl font-bold text-accent" data-testid="text-listing-price">
                       ${listing.price.toLocaleString()}
                     </p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Eye className="w-4 h-4" />
+                      <span>{listing.views || 0}</span>
+                    </div>
                   </div>
                   <div>
                     <h3 className="font-semibold mb-2 text-foreground">
@@ -246,7 +256,11 @@ export default function ListingDetailPage() {
               </Card>
 
               <Card className="bg-muted/50">
-                <CardContent className="p-6">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex gap-2">
+                    <ShareDialog listingId={listing.id} title={listing.title} />
+                    <ReportDialog listingId={listing.id} />
+                  </div>
                   <h3 className="font-semibold mb-3 text-foreground">
                     {language === 'fa' ? 'نکات ایمنی' :
                      language === 'ps' ? 'د خوندیتوب نکتې' :

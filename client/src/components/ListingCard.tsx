@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { categories, cities } from '@shared/schema';
 import { MapPin, Clock } from 'lucide-react';
+import FavoriteButton from './FavoriteButton';
 
 interface ListingCardProps {
   id: string;
@@ -85,6 +86,9 @@ export default function ListingCard({
           <Badge variant="secondary" className="bg-card/90 backdrop-blur-sm">
             {getCategoryName()}
           </Badge>
+        </div>
+        <div className="absolute top-2 ltr:right-2 rtl:left-2">
+          <FavoriteButton listingId={id} size="icon" variant="ghost" />
         </div>
       </div>
       <CardContent className="p-4">

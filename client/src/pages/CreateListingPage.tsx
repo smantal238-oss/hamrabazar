@@ -50,12 +50,15 @@ export default function CreateListingPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       toast({
-        title: t('success') || 'موفقیت',
-        description: language === 'fa' ? 'آگهی شما با موفقیت ثبت شد' : 
-                     language === 'ps' ? 'ستاسو اعلان په بریالیتوب سره ثبت شو' :
-                     'Your listing has been created successfully',
+        title: language === 'fa' ? '✅ موفقیت' : language === 'ps' ? '✅ بریالیتوب' : '✅ Success',
+        description: language === 'fa' 
+          ? 'شما موفقانه اطلاعات خود را وارد نمودید. به زودترین فرصت توسط ادمین صفحه چک شده و در بازار نمایش داده خواهد شد.\n\nبا احترام از سمت تیم سازنده'
+          : language === 'ps' 
+          ? 'تاسو په بریالیتوب سره خپل معلومات داخل کړل. په ډیر ژر وخت کې به د اډمین لخوا چک او په بازار کې به ښودل شي.\n\nد جوړونکي ټیم لخوا درناوی سره'
+          : 'You have successfully submitted your information. Your listing will be reviewed by admin and displayed in the market soon.\n\nWith respect from the development team',
+        duration: 8000,
       });
-      navigate('/');
+      navigate('/dashboard');
     },
     onError: (error: Error) => {
       toast({
@@ -87,6 +90,18 @@ export default function CreateListingPage() {
         description: language === 'fa' ? 'لطفا تمام فیلدها را پر کنید' :
                      language === 'ps' ? 'مهرباني وکړئ ټول برخې ډک کړئ' :
                      'Please fill all fields',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const priceNum = parseInt(formData.price);
+    if (isNaN(priceNum) || priceNum < 0) {
+      toast({
+        title: language === 'fa' ? 'خطا' : language === 'ps' ? 'تیروتنه' : 'Error',
+        description: language === 'fa' ? 'قیمت باید عدد مثبت باشد' :
+                     language === 'ps' ? 'قیمت باید مثبت عدد وي' :
+                     'Price must be positive',
         variant: 'destructive',
       });
       return;
@@ -211,6 +226,8 @@ export default function CreateListingPage() {
                     <Input
                       id="price"
                       type="number"
+                      min="0"
+                      step="1"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                       placeholder="0"
@@ -288,12 +305,21 @@ export default function CreateListingPage() {
                     data-testid="input-listing-image"
                   />
                   {imageFile && (
-                    <div className="mt-2">
+                    <div className="mt-2 relative inline-block">
                       <img 
                         src={URL.createObjectURL(imageFile)} 
                         alt="Preview" 
                         className="w-32 h-32 object-cover rounded-lg"
                       />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                        onClick={() => setImageFile(null)}
+                      >
+                        ✕
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -317,12 +343,22 @@ export default function CreateListingPage() {
                   {additionalImages.length > 0 && (
                     <div className="mt-2 flex gap-2 flex-wrap">
                       {additionalImages.map((file, i) => (
-                        <img 
-                          key={i}
-                          src={URL.createObjectURL(file)} 
-                          alt={`Preview ${i + 1}`} 
-                          className="w-20 h-20 object-cover rounded-lg"
-                        />
+                        <div key={i} className="relative inline-block">
+                          <img 
+                            src={URL.createObjectURL(file)} 
+                            alt={`Preview ${i + 1}`} 
+                            className="w-20 h-20 object-cover rounded-lg"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                            onClick={() => setAdditionalImages(prev => prev.filter((_, idx) => idx !== i))}
+                          >
+                            ✕
+                          </Button>
+                        </div>
                       ))}
                     </div>
                   )}

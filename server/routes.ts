@@ -1,7 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertListingSchema, insertUserSchema, insertMessageSchema } from "@shared/schema";
+import { db } from "./db";
+import { insertListingSchema, insertUserSchema, insertMessageSchema, users } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import multer from "multer";
 import path from "path";
@@ -93,7 +94,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     passport.authenticate('google', { session: false, failureRedirect: '/auth' }),
     (req: any, res) => {
       const user = req.user;
-      res.redirect(`/auth?googleAuth=success&user=${encodeURIComponent(JSON.stringify(user))}`);
+      res.redirect(`/?googleAuth=success&user=${encodeURIComponent(JSON.stringify(user))}`);
     }
   );
 
@@ -390,52 +391,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/listings", async (req, res) => {
     try {
       const { category, city, query } = req.query;
-      const { mockListings } = await import("./mockData");
+      let listings;
 
-      // Use mock data as fallback
-      let listings = mockListings;
-      
-      // Handle multiple categories
-      if (category) {
-        const categories = Array.isArray(category) ? category : [category];
-        const validCategories = categories.filter(cat => cat !== 'all');
-        if (validCategories.length > 0) {
-          listings = listings.filter(l => validCategories.includes(l.category));
-        }
-      }
-      
-      // Handle multiple cities
-      if (city) {
-        const cities = Array.isArray(city) ? city : [city];
-        if (cities.length > 0) {
-          listings = listings.filter(l => cities.includes(l.city));
-        }
-      }
-      
-      if (query) {
-        listings = listings.filter(l => 
-          l.title.includes(query as string) || 
-          l.description.includes(query as string)
+      if (query || category || city) {
+        listings = await storage.searchListings(
+          query as string || '',
+          category as string,
+          city as string
         );
+      } else {
+        listings = await storage.getAllListings();
       }
 
       res.json(listings);
     } catch (error: any) {
-      const { mockListings } = await import("./mockData");
-      res.json(mockListings);
+      console.error('Get listings error:', error);
+      res.status(500).json({ message: error.message });
     }
   });
 
   app.get("/api/listings/:id", async (req, res) => {
     try {
-      const { mockListings } = await import("./mockData");
-      const listing = mockListings.find(l => l.id === req.params.id);
+      const listing = await storage.getListing(req.params.id);
       
       if (!listing) {
         return res.status(404).json({ message: "Listing not found" });
       }
       res.json(listing);
     } catch (error: any) {
+      console.error('Get listing error:', error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -445,9 +429,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertListingSchema.parse(req.body);
       const userId = req.body.userId || 'mock-user-123';
 
+      // Check if user exists in database, if not create it
+      let user = await storage.getUser(userId);
+      if (!user) {
+        const { mockUsers } = await import("./mockData");
+        const mockUser = mockUsers.find(u => u.id === userId);
+        if (mockUser) {
+          // Create user in database
+          user = await storage.createUser({
+            id: mockUser.id,
+            name: mockUser.name,
+            phone: mockUser.phone || mockUser.email || `user_${Date.now()}`,
+            password: mockUser.password || 'default123',
+            email: mockUser.email,
+            role: mockUser.role || 'user'
+          });
+          console.log(`✅ User created in DB: ${user.name} (${user.id})`);
+        } else {
+          return res.status(400).json({ message: 'User not found' });
+        }
+      }
+
       const listing = await storage.createListing(validatedData, userId);
       res.status(201).json(listing);
     } catch (error: any) {
+      console.error('Create listing error:', error);
       res.status(400).json({ message: error.message });
     }
   });
@@ -495,9 +501,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/user/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
-      const { mockUsers } = await import("./mockData");
       
-      const user = mockUsers.find(u => u.id === userId);
+      const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -505,6 +510,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error: any) {
+      console.error('Get user error:', error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -555,9 +561,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", async (req, res) => {
     try {
       const validatedData = insertMessageSchema.parse(req.body);
+      
+      // Ensure sender and receiver exist in database
+      const { mockUsers } = await import("./mockData");
+      for (const userId of [validatedData.senderId, validatedData.receiverId]) {
+        const existsInDb = await storage.getUser(userId);
+        if (!existsInDb) {
+          const mockUser = mockUsers.find(u => u.id === userId);
+          if (mockUser) {
+            await storage.createUser({
+              id: mockUser.id,
+              name: mockUser.name,
+              phone: mockUser.phone || mockUser.email || `user_${Date.now()}`,
+              password: mockUser.password || 'default123',
+              email: mockUser.email,
+              role: mockUser.role || 'user'
+            });
+            console.log(`✅ User created in DB: ${mockUser.name} (${userId})`);
+          }
+        }
+      }
+      
       const message = await storage.createMessage(validatedData);
       res.status(201).json(message);
     } catch (error: any) {
+      console.error('Create message error:', error);
       res.status(400).json({ message: error.message });
     }
   });
@@ -593,6 +621,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(listing);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/admin/delete-listing/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteListing(id);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Listing not found" });
+      }
+
+      res.json({ message: "Listing deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/admin/reject-listing/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const listing = await storage.getListing(id);
+
+      if (!listing) {
+        return res.status(404).json({ message: "Listing not found" });
+      }
+
+      // Send rejection message to user
+      await storage.createMessage({
+        listingId: id,
+        senderId: 'admin',
+        receiverId: listing.userId,
+        content: 'آگهی شما به دلیل نقض سیاست‌های حریم خصوصی وب‌سایت از سمت ادمین لغو گردید. لطفاً دوباره کوشش نمایید و برای پشتیبانی می‌توانید به این پیام جواب بدهید. به زودی از سمت یکی از ادمین‌های ما جواب دریافت خواهید نمود. ممنون شما.',
+        read: false
+      });
+
+      // Delete the listing
+      await storage.deleteListing(id);
+
+      res.json({ message: "Listing rejected and user notified" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      // Get all users from database
+      const allUsers = await db.select().from(users);
+      const usersWithoutPassword = allUsers.map(({ password, ...user }) => user);
+      res.json(usersWithoutPassword);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
     }
   });
 
@@ -740,10 +821,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { listingId } = req.params;
       const { userId } = req.body;
-      const messages = await storage.getMessagesForListing(listingId, userId);
-      // Mark as read (in real app, update database)
+      
+      // Update all messages where user is receiver
+      await db.update(messages)
+        .set({ read: true })
+        .where(and(
+          eq(messages.listingId, listingId),
+          eq(messages.receiverId, userId)
+        ));
+      
       res.json({ success: true });
     } catch (error: any) {
+      console.error('Mark read error:', error);
       res.status(500).json({ message: error.message });
     }
   });

@@ -60,6 +60,24 @@ export const reports = pgTable("reports", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const deletedListings = pgTable("deleted_listings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  originalId: varchar("original_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  price: integer("price").notNull(),
+  currency: text("currency").notNull(),
+  category: text("category").notNull(),
+  city: text("city").notNull(),
+  imageUrl: text("image_url"),
+  images: text("images").array(),
+  userId: varchar("user_id").notNull(),
+  deletedBy: varchar("deleted_by").notNull(),
+  deleteReason: text("delete_reason"),
+  deletedAt: timestamp("deleted_at").defaultNow(),
+  originalCreatedAt: timestamp("original_created_at"),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,

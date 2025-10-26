@@ -26,10 +26,13 @@ export default function EditListingPage() {
     title: '',
     description: '',
     price: '',
+    currency: 'USD',
     category: '',
     city: '',
     imageUrl: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [additionalImages, setAdditionalImages] = useState<File[]>([]);
 
   const { data: listing, isLoading } = useQuery<Listing>({
     queryKey: ['/api/listings', listingId],
@@ -42,6 +45,7 @@ export default function EditListingPage() {
         title: listing.title,
         description: listing.description,
         price: listing.price.toString(),
+        currency: listing.currency || 'USD',
         category: listing.category,
         city: listing.city,
         imageUrl: listing.imageUrl || '',
@@ -68,7 +72,7 @@ export default function EditListingPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       toast({
         title: language === 'fa' ? 'موفقیت' : language === 'ps' ? 'بریالیتوب' : 'Success',
-        description: language === 'fa' ? 'آگهی با موفقیت به‌روزرسانی شد' :
+        description: language === 'fa' ? 'آگهی با موفقیت بهروزرسانی شد' :
                      language === 'ps' ? 'اعلان په بریالیتوب سره تازه شو' :
                      'Listing updated successfully',
       });
@@ -97,7 +101,63 @@ export default function EditListingPage() {
       return;
     }
 
-    updateListingMutation.mutate(formData);
+    const priceNum = parseInt(formData.price);
+    if (isNaN(priceNum) || priceNum < 0) {
+      toast({
+        title: language === 'fa' ? 'خطا' : language === 'ps' ? 'تیروتنه' : 'Error',
+        description: language === 'fa' ? 'قیمت باید عدد مثبت باشد' :
+                     language === 'ps' ? 'قیمت باید مثبت عدد وي' :
+                     'Price must be positive',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    let imageUrl = formData.imageUrl;
+    let images: string[] = [];
+    
+    if (imageFile) {
+      const formDataImage = new FormData();
+      formDataImage.append('image', imageFile);
+      formDataImage.append('userId', user!.id);
+      
+      try {
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formDataImage,
+        });
+        const uploadResult = await uploadResponse.json();
+        imageUrl = uploadResult.imageUrl;
+      } catch (error) {
+        toast({
+          title: language === 'fa' ? 'خطا' : language === 'ps' ? 'تیروتنه' : 'Error',
+          description: language === 'fa' ? 'خطا در آپلود تصویر' :
+                       language === 'ps' ? 'د انځور په اپلوډ کې تیروتنه' :
+                       'Error uploading image',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    if (additionalImages.length > 0) {
+      const formDataImages = new FormData();
+      additionalImages.forEach(file => formDataImages.append('images', file));
+      formDataImages.append('userId', user!.id);
+      
+      try {
+        const uploadResponse = await fetch('/api/upload-multiple', {
+          method: 'POST',
+          body: formDataImages,
+        });
+        const uploadResult = await uploadResponse.json();
+        images = uploadResult.imageUrls;
+      } catch (error) {
+        console.error('Error uploading additional images:', error);
+      }
+    }
+
+    updateListingMutation.mutate({ ...formData, imageUrl, images });
   };
 
   const getCategoryName = (cat: typeof categories[number]) => {
@@ -154,7 +214,7 @@ export default function EditListingPage() {
                  'Edit Listing'}
               </CardTitle>
               <CardDescription>
-                {language === 'fa' ? 'اطلاعات آگهی خود را به‌روزرسانی کنید' :
+                {language === 'fa' ? 'اطلاعات آگهی خود را بهروزرسانی کنید' :
                  language === 'ps' ? 'د خپل اعلان معلومات تازه کړئ' :
                  'Update your listing details'}
               </CardDescription>
@@ -186,23 +246,41 @@ export default function EditListingPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="price">
-                      {language === 'fa' ? 'قیمت (دلار)' : language === 'ps' ? 'قیمت (ډالر)' : 'Price (USD)'}
+                      {language === 'fa' ? 'قیمت' : language === 'ps' ? 'قیمت' : 'Price'}
                     </Label>
                     <Input
                       id="price"
                       type="number"
+                      min="0"
+                      step="1"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      placeholder="0"
                       data-testid="input-edit-price"
                     />
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="currency">
+                      {language === 'fa' ? 'واحد پول' : language === 'ps' ? 'د پیسو واحد' : 'Currency'}
+                    </Label>
+                    <Select value={formData.currency} onValueChange={(value) => setFormData({ ...formData, currency: value })}>
+                      <SelectTrigger id="currency">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">💵 {language === 'fa' ? 'دلار' : language === 'ps' ? 'ډالر' : 'USD'}</SelectItem>
+                        <SelectItem value="AFN">؋ {language === 'fa' ? 'افغانی' : language === 'ps' ? 'افغانۍ' : 'AFN'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="category">
-                      {language === 'fa' ? 'دسته‌بندی' : language === 'ps' ? 'کټګورۍ' : 'Category'}
+                      {language === 'fa' ? 'دستهبندی' : language === 'ps' ? 'کټګورۍ' : 'Category'}
                     </Label>
                     <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
                       <SelectTrigger id="category" data-testid="select-edit-category">
@@ -238,18 +316,94 @@ export default function EditListingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="imageUrl">
-                    {language === 'fa' ? 'لینک تصویر (اختیاری)' :
-                     language === 'ps' ? 'د انځور لینک (اختیاري)' :
-                     'Image URL (optional)'}
+                  <Label htmlFor="image">
+                    {language === 'fa' ? 'تصویر اصلی' :
+                     language === 'ps' ? 'اصلي انځور' :
+                     'Main Image'}
                   </Label>
+                  {formData.imageUrl && !imageFile && (
+                    <div className="mb-2 relative inline-block">
+                      <img 
+                        src={formData.imageUrl} 
+                        alt="Current" 
+                        className="w-32 h-32 object-cover rounded-lg"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                        onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  )}
                   <Input
-                    id="imageUrl"
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
                     data-testid="input-edit-image"
                   />
+                  {imageFile && (
+                    <div className="mt-2 relative inline-block">
+                      <img 
+                        src={URL.createObjectURL(imageFile)} 
+                        alt="Preview" 
+                        className="w-32 h-32 object-cover rounded-lg"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                        onClick={() => setImageFile(null)}
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="additional-images">
+                    {language === 'fa' ? 'تصاویر اضافی (حداکثر 5)' :
+                     language === 'ps' ? 'اضافي انځورونه (تر 5 پورې)' :
+                     'Additional Images (max 5)'}
+                  </Label>
+                  <Input
+                    id="additional-images"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []).slice(0, 5);
+                      setAdditionalImages(files);
+                    }}
+                  />
+                  {additionalImages.length > 0 && (
+                    <div className="mt-2 flex gap-2 flex-wrap">
+                      {additionalImages.map((file, i) => (
+                        <div key={i} className="relative inline-block">
+                          <img 
+                            src={URL.createObjectURL(file)} 
+                            alt={`Preview ${i + 1}`} 
+                            className="w-20 h-20 object-cover rounded-lg"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                            onClick={() => setAdditionalImages(prev => prev.filter((_, idx) => idx !== i))}
+                          >
+                            ✕
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-3 justify-end">
@@ -267,10 +421,10 @@ export default function EditListingPage() {
                     data-testid="button-update-listing"
                   >
                     {updateListingMutation.isPending ?
-                      (language === 'fa' ? 'در حال به‌روزرسانی...' :
+                      (language === 'fa' ? 'در حال بهروزرسانی...' :
                        language === 'ps' ? 'د تازه کولو په حال کې...' :
                        'Updating...') :
-                      (language === 'fa' ? 'به‌روزرسانی' :
+                      (language === 'fa' ? 'بهروزرسانی' :
                        language === 'ps' ? 'تازه کول' :
                        'Update')}
                   </Button>

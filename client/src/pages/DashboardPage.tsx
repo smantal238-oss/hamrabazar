@@ -142,9 +142,20 @@ export default function DashboardPage() {
                       <CardTitle className="text-lg line-clamp-2" data-testid={`text-listing-title-${listing.id}`}>
                         {listing.title}
                       </CardTitle>
-                      <Badge variant="secondary" className="shrink-0">
-                        {getCategoryName(listing.category)}
-                      </Badge>
+                      <div className="flex flex-col gap-1 shrink-0">
+                        <Badge variant="secondary">
+                          {getCategoryName(listing.category)}
+                        </Badge>
+                        {listing.approved ? (
+                          <Badge variant="default" className="bg-green-600">
+                            {language === 'fa' ? '✅ تایید' : language === 'ps' ? '✅ تایید' : '✅ Approved'}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="border-yellow-600 text-yellow-600">
+                            {language === 'fa' ? '⏳ انتظار' : language === 'ps' ? '⏳ انتظار' : '⏳ Pending'}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">
                       {listing.description}

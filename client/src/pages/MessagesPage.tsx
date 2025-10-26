@@ -40,36 +40,91 @@ export default function MessagesPage() {
     refetchInterval: 3000,
   });
 
+  // Mark messages as read
+  useEffect(() => {
+    if (messages.length > 0 && user?.id && listingId) {
+      fetch(`/api/messages/read/${listingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      });
+    }
+  }, [messages.length, user?.id, listingId]);
+
   const { data: seller } = useQuery<User>({
     queryKey: ['/api/user', listing?.userId],
     enabled: !!listing?.userId,
   });
 
+  // Get all unique user IDs from messages
+  const userIds = [...new Set(messages.map(m => m.senderId).concat(messages.map(m => m.receiverId)))];
+  
+  // Fetch all users
+  const userQueries = useQuery<Record<string, User>>({
+    queryKey: ['/api/users', userIds],
+    queryFn: async () => {
+      const users: Record<string, User> = {};
+      for (const userId of userIds) {
+        try {
+          const response = await fetch(`/api/user/${userId}`);
+          if (response.ok) {
+            users[userId] = await response.json();
+          }
+        } catch (error) {
+          console.error(`Failed to fetch user ${userId}`);
+        }
+      }
+      return users;
+    },
+    enabled: userIds.length > 0,
+  });
+
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
+      if (!listing?.userId) {
+        throw new Error('Listing not loaded');
+      }
+      // Determine receiver: if I'm the seller, send to the last person who messaged me
+      // Otherwise, send to the seller
+      let receiverId = listing.userId;
+      if (user?.id === listing.userId && messages.length > 0) {
+        // I'm the seller, reply to the last sender
+        const lastMessage = messages[messages.length - 1];
+        receiverId = lastMessage.senderId === user.id ? lastMessage.receiverId : lastMessage.senderId;
+      }
+      
       const response = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           listingId,
           senderId: user?.id,
-          receiverId: listing?.userId,
+          receiverId,
           content,
         }),
       });
-      if (!response.ok) throw new Error('Failed to send message');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to send message');
+      }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/messages/listing', listingId, user?.id] });
       setMessageText('');
+      toast({
+        title: language === 'fa' ? '✅ موفق' : language === 'ps' ? '✅ بریالی' : '✅ Success',
+        description: language === 'fa' ? 'پیام ارسال شد' : 
+                     language === 'ps' ? 'پیغام ولیږل شو' : 
+                     'Message sent',
+      });
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         title: language === 'fa' ? 'خطا' : language === 'ps' ? 'تیروتنه' : 'Error',
-        description: language === 'fa' ? 'ارسال پیام ناموفق بود' : 
+        description: error.message || (language === 'fa' ? 'ارسال پیام ناموفق بود' : 
                      language === 'ps' ? 'پیغام ونه لیږل شو' : 
-                     'Failed to send message',
+                     'Failed to send message'),
         variant: 'destructive',
       });
     },
@@ -141,6 +196,8 @@ export default function MessagesPage() {
               ) : (
                 messages.map((msg) => {
                   const isOwn = msg.senderId === user.id;
+                  const sender = userQueries.data?.[msg.senderId];
+                  const senderName = sender?.name || (language === 'fa' ? 'کاربر' : language === 'ps' ? 'کارن' : 'User');
                   return (
                     <div
                       key={msg.id}
@@ -153,6 +210,9 @@ export default function MessagesPage() {
                             : 'bg-muted'
                         }`}
                       >
+                        <p className={`text-xs font-semibold mb-1 ${isOwn ? 'text-primary-foreground' : 'text-foreground'}`}>
+                          {senderName}
+                        </p>
                         <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                         <p className={`text-xs mt-1 ${isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                           {new Date(msg.createdAt!).toLocaleTimeString(

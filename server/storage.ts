@@ -5,6 +5,7 @@ import { eq, and, or, like, desc } from "drizzle-orm";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByPhone(phone: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
   getListing(id: string): Promise<Listing | undefined>;
@@ -39,6 +40,19 @@ export class DbStorage implements IStorage {
       return result[0];
     } catch (error) {
       console.error('Error getting user by phone:', error);
+      return undefined;
+    }
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    try {
+      if (!email || typeof email !== 'string') {
+        return undefined;
+      }
+      const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error('Error getting user by email:', error);
       return undefined;
     }
   }

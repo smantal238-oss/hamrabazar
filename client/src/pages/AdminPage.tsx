@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Check, X, Trash2, Users } from "lucide-react";
 
 interface PendingListing {
   id: string;
@@ -17,6 +19,7 @@ interface PendingListing {
 
 export default function AdminPage() {
   const { user } = useAuth();
+  const [, navigate] = useLocation();
   const [pendingListings, setPendingListings] = useState<PendingListing[]>([]);
 
   if (!user || user.role !== 'admin') {
@@ -60,9 +63,41 @@ export default function AdminPage() {
     }
   };
 
+  const rejectListing = async (id: string) => {
+    if (!confirm('آیا مطمئن هستید؟ پیام رد به کاربر ارسال میشود.')) return;
+    try {
+      await fetch(`/api/admin/reject-listing/${id}`, {
+        method: 'POST',
+        headers: { 'user-role': user.role }
+      });
+      fetchPendingListings();
+    } catch (error) {
+      console.error('Error rejecting listing:', error);
+    }
+  };
+
+  const deleteListing = async (id: string) => {
+    if (!confirm('آیا مطمئن هستید؟')) return;
+    try {
+      await fetch(`/api/admin/delete-listing/${id}`, {
+        method: 'DELETE',
+        headers: { 'user-role': user.role }
+      });
+      fetchPendingListings();
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+    }
+  };
+
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">پنل مدیریت</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">پنل مدیریت</h1>
+        <Button onClick={() => navigate('/admin/users')} variant="outline">
+          <Users className="w-4 h-4 mr-2" />
+          مدیریت کاربران
+        </Button>
+      </div>
       
       <Card>
         <CardHeader>
@@ -86,12 +121,32 @@ export default function AdminPage() {
                           <Badge variant="outline">${listing.price}</Badge>
                         </div>
                       </div>
-                      <Button 
-                        onClick={() => approveListing(listing.id)}
-                        className="mr-4"
-                      >
-                        تایید
-                      </Button>
+                      <div className="flex gap-2 mr-4">
+                        <Button 
+                          onClick={() => approveListing(listing.id)}
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <Check className="w-4 h-4 mr-1" />
+                          تایید
+                        </Button>
+                        <Button 
+                          onClick={() => rejectListing(listing.id)}
+                          size="sm"
+                          variant="destructive"
+                        >
+                          <X className="w-4 h-4 mr-1" />
+                          رد
+                        </Button>
+                        <Button 
+                          onClick={() => deleteListing(listing.id)}
+                          size="sm"
+                          variant="outline"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          حذف
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

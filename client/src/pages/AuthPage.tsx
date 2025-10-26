@@ -43,12 +43,17 @@ export default function AuthPage() {
     if (googleAuth === 'success' && userStr) {
       try {
         const user = JSON.parse(decodeURIComponent(userStr));
-        login(user);
+        const isNewUser = user.isNewUser;
+        delete user.isNewUser;
+        localStorage.setItem('user', JSON.stringify(user));
         toast({
-          title: 'ورود موفق',
-          description: `خوش آمدید ${user.name}`,
+          title: isNewUser ? '✅ اکانت ساخته شد' : '👋 خوش آمدید',
+          description: isNewUser 
+            ? 'اکانت شما موفقانه ساخته شد'
+            : `بازگشت تان را خوش آمدید میگوییم ${user.name}`,
+          duration: 5000,
         });
-        navigate('/');
+        window.location.href = '/';
       } catch (error) {
         toast({
           title: 'خطا',
@@ -57,7 +62,7 @@ export default function AuthPage() {
         });
       }
     }
-  }, [login, navigate, toast]);
+  }, [toast]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

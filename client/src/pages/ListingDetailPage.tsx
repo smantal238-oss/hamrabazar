@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import FixedHeader from '@/components/FixedHeader';
@@ -20,6 +21,7 @@ export default function ListingDetailPage() {
   const { t, language } = useLanguage();
   const { user: currentUser } = useAuth();
   const listingId = params?.id;
+  const [showPhone, setShowPhone] = useState(false);
 
   const { data: listing, isLoading } = useQuery<Listing>({
     queryKey: ['/api/listings', listingId],
@@ -180,7 +182,7 @@ export default function ListingDetailPage() {
                 <CardContent>
                   <div className="mb-6 flex items-center justify-between">
                     <p className="text-3xl font-bold text-accent" data-testid="text-listing-price">
-                      ${listing.price.toLocaleString()}
+                      {listing.currency === 'AFN' ? '؋' : '$'}{listing.price.toLocaleString()}
                     </p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Eye className="w-4 h-4" />
@@ -209,19 +211,45 @@ export default function ListingDetailPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <UserIcon className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-foreground" data-testid="text-seller-name">
-                      {seller?.name || language === 'fa' ? 'کاربر' : language === 'ps' ? 'کارن' : 'User'}
-                    </span>
-                  </div>
+                  {currentUser && (
+                    <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                      {seller?.avatar ? (
+                        <img src={seller.avatar} alt={seller.name} className="w-12 h-12 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <UserIcon className="w-6 h-6 text-primary" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="font-semibold text-foreground" data-testid="text-seller-name">
+                          {seller?.name || (language === 'fa' ? 'کاربر' : language === 'ps' ? 'کارن' : 'User')}
+                        </p>
+                        {seller?.phone && (
+                          <p className="text-sm text-muted-foreground">
+                            <Phone className="w-3 h-3 inline ltr:mr-1 rtl:ml-1" />
+                            {showPhone ? seller.phone : '••••••••••'}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   {currentUser ? (
                     <div className="space-y-3">
-                      <Button className="w-full" data-testid="button-contact-seller">
+                      <Button 
+                        className="w-full" 
+                        onClick={() => setShowPhone(!showPhone)}
+                        data-testid="button-contact-seller"
+                      >
                         <Phone className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-                        {language === 'fa' ? 'نمایش شماره تماس' :
-                         language === 'ps' ? 'د تلیفون شمیره وګورئ' :
-                         'Show Phone Number'}
+                        {showPhone ? (
+                          language === 'fa' ? 'مخفی کردن شماره' :
+                          language === 'ps' ? 'شمیره پٹه کول' :
+                          'Hide Phone'
+                        ) : (
+                          language === 'fa' ? 'نمایش شماره تماس' :
+                          language === 'ps' ? 'د تلیفون شمیره وګورئ' :
+                          'Show Phone Number'
+                        )}
                       </Button>
                       <Button
                         variant="outline"

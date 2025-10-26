@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import FixedHeader from '@/components/FixedHeader';
@@ -23,6 +23,38 @@ export default function HomePage() {
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filters, setFilters] = useState<SearchFilters>({});
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const googleAuth = params.get('googleAuth');
+    const userStr = params.get('user');
+    
+    if (googleAuth === 'success' && userStr) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userStr));
+        const isNewUser = user.isNewUser;
+        delete user.isNewUser;
+        localStorage.setItem('user', JSON.stringify(user));
+        // Reload to show welcome message
+        if (isNewUser !== undefined) {
+          sessionStorage.setItem('showWelcome', isNewUser ? 'new' : 'back');
+        }
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Google auth error:', error);
+      }
+    }
+    
+    // Show welcome message
+    const showWelcome = sessionStorage.getItem('showWelcome');
+    if (showWelcome) {
+      sessionStorage.removeItem('showWelcome');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      setTimeout(() => {
+        // This will be handled by toast in the component
+      }, 500);
+    }
+  }, []);
 
   const queryParams = new URLSearchParams();
   if (searchQuery) queryParams.append('query', searchQuery);

@@ -13,6 +13,7 @@ import CreateListingPage from "@/pages/CreateListingPage";
 import DashboardPage from "@/pages/DashboardPage";
 import EditListingPage from "@/pages/EditListingPage";
 import AdminPage from "@/pages/AdminPageNew";
+import AdminUsersPage from "@/pages/AdminUsersPage";
 import AboutPage from "@/pages/AboutPage";
 import TermsPage from "@/pages/TermsPage";
 import PrivacyPage from "@/pages/PrivacyPage";
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/edit-listing/:id" component={EditListingPage} />
       <Route path="/admin" component={AdminPage} />
+      <Route path="/admin/users" component={AdminUsersPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/privacy" component={PrivacyPage} />
